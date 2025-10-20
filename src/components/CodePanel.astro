@@ -1,64 +1,124 @@
 ---
 // src/components/CodePanel.astro
 ---
-<div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm sticky top-24">
-  <h3 class="font-bold text-lg mb-4">Ejemplos</h3>
+<div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm sticky top-6 h-fit">
+  <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+    <h3 class="font-bold text-lg text-gray-900 dark:text-white">Ejemplos de Código</h3>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Prueba la API en diferentes lenguajes</p>
+  </div>
   
   <!-- Tabs para diferentes lenguajes -->
   <div class="border-b border-gray-200 dark:border-gray-700">
-    <nav class="-mb-px flex space-x-8">
-      <button class="tab-button py-2 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600" data-tab="curl">
-        cURL
+    <nav class="flex px-4">
+      <button class="tab-button flex items-center space-x-2 py-3 px-4 border-b-2 border-blue-500 font-medium text-sm text-blue-600 dark:text-blue-400" data-tab="curl">
+        <span class="w-4 h-4 bg-green-500 rounded text-xs text-white flex items-center justify-center font-mono">$</span>
+        <span>cURL</span>
       </button>
-      <button class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="javascript">
-        JavaScript
+      <button class="tab-button flex items-center space-x-2 py-3 px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300" data-tab="javascript">
+        <span class="w-4 h-4 bg-yellow-500 rounded text-xs text-white flex items-center justify-center font-mono">JS</span>
+        <span>JavaScript</span>
       </button>
-      <button class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="python">
-        Python
+      <button class="tab-button flex items-center space-x-2 py-3 px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300" data-tab="python">
+        <span class="w-4 h-4 bg-blue-500 rounded text-xs text-white flex items-center justify-center font-mono">PY</span>
+        <span>Python</span>
       </button>
     </nav>
   </div>
   
   <!-- Contenido de las tabs -->
-  <div class="mt-4">
+  <div class="p-4">
     <div id="curl" class="tab-content">
-      <pre class="bg-gray-100 dark:bg-gray-900 p-4 rounded text-sm overflow-x-auto"><code>curl -X GET \
-  https://api.example.com/v1/facturas \
+      <div class="mb-3 flex items-center justify-between">
+        <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Terminal</span>
+        <button class="copy-btn text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" data-target="curl-code">
+          Copiar
+        </button>
+      </div>
+      <pre class="bg-gray-900 dark:bg-gray-950 text-green-400 p-4 rounded-lg text-sm overflow-x-auto border"><code id="curl-code">curl -X GET \
+  'https://api.clarisa.com/v1/facturas' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
-  -H 'Content-Type: application/json'</code></pre>
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json'</code></pre>
     </div>
     
-<div id="javascript" class="tab-content hidden">
-  <pre class="bg-gray-100 dark:bg-gray-900 p-4 rounded text-sm overflow-x-auto">
-    <code set:html={`const response = await fetch('https://api.example.com/v1/facturas', {
+    <div id="javascript" class="tab-content hidden">
+      <div class="mb-3 flex items-center justify-between">
+        <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Node.js / Browser</span>
+        <button class="copy-btn text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" data-target="js-code">
+          Copiar
+        </button>
+      </div>
+      <pre class="bg-gray-900 dark:bg-gray-950 text-gray-300 p-4 rounded-lg text-sm overflow-x-auto border"><code id="js-code" set:html={`// Usando fetch API
+const response = await fetch('https://api.clarisa.com/v1/facturas', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_TOKEN',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
   }
 });
 
-const data = await response.json();
-console.log(data);`}></code>
-  </pre>
-</div>
+if (response.ok) {
+  const data = await response.json();
+  console.log('Facturas:', data);
+} else {
+  console.error('Error:', response.status);
+}`}></code></pre>
+    </div>
     
-<div id="python" class="tab-content hidden">
-  <pre class="bg-gray-100 dark:bg-gray-900 p-4 rounded text-sm overflow-x-auto">
-    <code set:html={`import requests
+    <div id="python" class="tab-content hidden">
+      <div class="mb-3 flex items-center justify-between">
+        <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Python 3.x</span>
+        <button class="copy-btn text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" data-target="python-code">
+          Copiar
+        </button>
+      </div>
+      <pre class="bg-gray-900 dark:bg-gray-950 text-gray-300 p-4 rounded-lg text-sm overflow-x-auto border"><code id="python-code" set:html={`import requests
+import json
 
-response = requests.get(
-  'https://api.example.com/v1/facturas',
-  headers={
+# Configurar headers
+headers = {
     'Authorization': 'Bearer YOUR_TOKEN',
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+}
+
+# Realizar petición
+response = requests.get(
+    'https://api.clarisa.com/v1/facturas',
+    headers=headers
 )
 
-data = response.json()
-print(data)`}></code>
-  </pre>
-</div>
+if response.status_code == 200:
+    data = response.json()
+    print(f"Facturas encontradas: {len(data)}")
+    print(json.dumps(data, indent=2))
+else:
+    print(f"Error: {response.status_code}")`}></code></pre>
+    </div>
+  </div>
+  
+  <!-- Respuesta de ejemplo -->
+  <div class="border-t border-gray-200 dark:border-gray-700 p-4">
+    <div class="mb-3">
+      <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Respuesta de ejemplo</span>
+    </div>
+    <pre class="bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 p-3 rounded text-xs overflow-x-auto border border-green-200 dark:border-green-800"><code set:html={`{
+  "status": "success",
+  "data": [
+    {
+      "id": "fact_123",
+      "numero": "F-2024-001",
+      "fecha": "2024-01-15",
+      "total": 1250.00,
+      "cliente": "Empresa ABC"
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1
+  }
+}`}></code></pre>
   </div>
 </div>
 
@@ -66,24 +126,49 @@ print(data)`}></code>
   document.addEventListener('DOMContentLoaded', function() {
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabContents = document.querySelectorAll('.tab-content');
+    const copyButtons = document.querySelectorAll('.copy-btn');
     
+    // Funcionalidad de tabs
     tabButtons.forEach(function(button) {
       button.addEventListener('click', function() {
         const targetTab = button.getAttribute('data-tab');
         
         // Actualizar botones
         tabButtons.forEach(function(btn) {
-          btn.classList.remove('border-blue-500', 'text-blue-600');
-          btn.classList.add('border-transparent', 'text-gray-500');
+          btn.classList.remove('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
+          btn.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
         });
-        button.classList.remove('border-transparent', 'text-gray-500');
-        button.classList.add('border-blue-500', 'text-blue-600');
+        button.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+        button.classList.add('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
         
         // Actualizar contenido
         tabContents.forEach(function(content) {
           content.classList.add('hidden');
         });
         document.getElementById(targetTab).classList.remove('hidden');
+      });
+    });
+    
+    // Funcionalidad de copiar
+    copyButtons.forEach(function(button) {
+      button.addEventListener('click', function() {
+        const targetId = button.getAttribute('data-target');
+        const codeElement = document.getElementById(targetId);
+        
+        if (codeElement && navigator.clipboard) {
+          navigator.clipboard.writeText(codeElement.textContent).then(function() {
+            button.textContent = '¡Copiado!';
+            setTimeout(function() {
+              button.textContent = 'Copiar';
+            }, 2000);
+          }).catch(function() {
+            // Fallback para navegadores que no soportan clipboard API
+            button.textContent = 'Error';
+            setTimeout(function() {
+              button.textContent = 'Copiar';
+            }, 2000);
+          });
+        }
       });
     });
   });
