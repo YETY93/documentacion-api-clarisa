@@ -1,0 +1,29 @@
+---
+// src/components/SidebarMenu.astro
+import { getCollection } from 'astro:content';
+
+const allDocs = await getCollection('docs');
+const categories = [...new Set(allDocs.map(doc => doc.data.category))];
+---
+<nav class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm sticky top-24">
+  <h2 class="font-bold text-lg mb-4">Menú</h2>
+  <ul class="space-y-2">
+    {categories.map(category => (
+      <li>
+        <div class="font-semibold capitalize">{category}</div>
+        <ul class="ml-4 space-y-1">
+          {allDocs
+            .filter(doc => doc.data.category === category)
+            .map(doc => (
+              <li>
+                <a href={`/${doc.data.category}/${doc.slug.split('/').pop()}`} 
+                   class="block hover:bg-slate-100 dark:hover:bg-slate-700 p-1 rounded">
+                   {doc.data.title}
+                </a>
+              </li>
+            ))}
+        </ul>
+      </li>
+    ))}
+  </ul>
+</nav>

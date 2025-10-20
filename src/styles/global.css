@@ -1,0 +1,20 @@
+/* src/styles/global.css */
+@import "tailwindcss";
+
+/* Estilos adicionales para resaltado de sintaxis en modo dark */
+.dark .prose pre {
+  background-color: rgb(30 41 59);
+  color: rgb(248 250 252);
+}
+
+.dark .prose code {
+  background-color: rgb(30 41 59);
+  color: rgb(248 250 252);
+}
+
+/* Estilos para las tabs */
+.tab-content pre {
+  white-space: pre;
+  word-wrap: normal;
+  overflow-x: auto;
+}

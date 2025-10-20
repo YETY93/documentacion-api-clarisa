@@ -1,0 +1,11 @@
+---
+// src/components/Header.astro
+import ThemeToggle from './ThemeToggle.astro';
+---
+<div class="container mx-auto flex justify-between items-center">
+  <h1 class="text-2xl font-bold">Mi API Docs</h1>
+  <nav class="flex items-center space-x-4">
+    <a href="#" class="hover:text-gray-300">Inicio</a>
+    <ThemeToggle />
+  </nav>
+</div>

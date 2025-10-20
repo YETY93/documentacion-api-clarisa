@@ -1,0 +1,90 @@
+---
+// src/components/CodePanel.astro
+---
+<div class="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm sticky top-24">
+  <h3 class="font-bold text-lg mb-4">Ejemplos</h3>
+  
+  <!-- Tabs para diferentes lenguajes -->
+  <div class="border-b border-gray-200 dark:border-gray-700">
+    <nav class="-mb-px flex space-x-8">
+      <button class="tab-button py-2 px-1 border-b-2 border-blue-500 font-medium text-sm text-blue-600" data-tab="curl">
+        cURL
+      </button>
+      <button class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="javascript">
+        JavaScript
+      </button>
+      <button class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="python">
+        Python
+      </button>
+    </nav>
+  </div>
+  
+  <!-- Contenido de las tabs -->
+  <div class="mt-4">
+    <div id="curl" class="tab-content">
+      <pre class="bg-gray-100 dark:bg-gray-900 p-4 rounded text-sm overflow-x-auto"><code>curl -X GET \
+  https://api.example.com/v1/facturas \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Content-Type: application/json'</code></pre>
+    </div>
+    
+<div id="javascript" class="tab-content hidden">
+  <pre class="bg-gray-100 dark:bg-gray-900 p-4 rounded text-sm overflow-x-auto">
+    <code set:html={`const response = await fetch('https://api.example.com/v1/facturas', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN',
+    'Content-Type': 'application/json'
+  }
+});
+
+const data = await response.json();
+console.log(data);`}></code>
+  </pre>
+</div>
+    
+<div id="python" class="tab-content hidden">
+  <pre class="bg-gray-100 dark:bg-gray-900 p-4 rounded text-sm overflow-x-auto">
+    <code set:html={`import requests
+
+response = requests.get(
+  'https://api.example.com/v1/facturas',
+  headers={
+    'Authorization': 'Bearer YOUR_TOKEN',
+    'Content-Type': 'application/json'
+  }
+)
+
+data = response.json()
+print(data)`}></code>
+  </pre>
+</div>
+  </div>
+</div>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(function(button) {
+      button.addEventListener('click', function() {
+        const targetTab = button.getAttribute('data-tab');
+        
+        // Actualizar botones
+        tabButtons.forEach(function(btn) {
+          btn.classList.remove('border-blue-500', 'text-blue-600');
+          btn.classList.add('border-transparent', 'text-gray-500');
+        });
+        button.classList.remove('border-transparent', 'text-gray-500');
+        button.classList.add('border-blue-500', 'text-blue-600');
+        
+        // Actualizar contenido
+        tabContents.forEach(function(content) {
+          content.classList.add('hidden');
+        });
+        document.getElementById(targetTab).classList.remove('hidden');
+      });
+    });
+  });
+</script>

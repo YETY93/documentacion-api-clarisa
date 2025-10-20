@@ -1,16 +1,29 @@
 ---
+// src/pages/index.astro
+import MainLayout from '../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
 
+const allDocs = await getCollection('docs');
+const categories = [...new Set(allDocs.map(doc => doc.data.category))];
 ---
-
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<MainLayout title="Documentación API clarisa">
+  <div class="prose prose-slate dark:prose-invert max-w-none">
+    <h1>Documentación de la API</h1>
+    <p>Bienvenido a la documentación de nuestra API. Aquí encontrarás toda la información necesaria para integrarte con nuestros servicios.</p>
+    
+    <h2>Categorías</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 not-prose">
+      {categories.map(category => (
+        <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold mb-2 capitalize">{category}</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-4">
+            Explora la documentación relacionada con {category}.
+          </p>
+          <a href={`/${category}`} class="text-blue-600 dark:text-blue-400 hover:underline">
+            Ver documentación →
+          </a>
+        </div>
+      ))}
+    </div>
+  </div>
+</MainLayout>

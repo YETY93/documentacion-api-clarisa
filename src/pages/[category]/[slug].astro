@@ -1,0 +1,23 @@
+---
+// src/pages/[category]/[slug].astro
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const pages = await getCollection('docs');
+  return pages.map((page) => {
+    const params = { category: page.data.category, slug: page.slug.split('/').pop() };
+    const props = { page };
+    return { params, props };
+  });
+}
+
+const { page } = Astro.props;
+const { Content } = await page.render();
+---
+<MainLayout title={page.data.title}>
+  <div class="prose prose-slate dark:prose-invert max-w-none">
+    <Content />
+  </div>
+</MainLayout>
+--- 

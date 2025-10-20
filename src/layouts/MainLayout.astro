@@ -1,0 +1,52 @@
+---
+// src/layouts/MainLayout.astro
+import Header from '../components/Header.astro';
+import SidebarMenu from '../components/SidebarMenu.astro';
+import CodePanel from '../components/CodePanel.astro';
+
+const { title } = Astro.props;
+---
+<html lang="es" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    
+    <!-- Script para aplicar el tema antes de renderizar -->
+    <script>
+      // Aplicar el tema guardado antes de que se renderice la página
+      (function() {
+        const theme = localStorage.getItem('theme') || 'light';
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="h-full bg-gray-50 dark:bg-gray-900 text-slate-900 dark:text-slate-100 transition-colors">
+    <header class="bg-slate-900 dark:bg-slate-800 text-white p-4 shadow-md sticky top-0 z-10">
+      <Header />
+    </header>
+
+    <!-- Grid para las 3 columnas -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 p-6 max-w-screen-2xl mx-auto h-[calc(100vh-72px)]">
+      
+      <!-- Columna Izquierda: Menú (1 de 5 en pantallas grandes) -->
+      <aside class="lg:col-span-1 overflow-y-auto">
+        <SidebarMenu />
+      </aside>
+
+      <!-- Columna Central: Contenido (3 de 5 en pantallas grandes) -->
+      <main class="lg:col-span-3 bg-white dark:bg-slate-800 p-6 rounded-lg shadow-sm overflow-y-auto">
+        <slot /> <!-- Aquí se inyectará el contenido de cada página -->
+      </main>
+
+      <!-- Columna Derecha: Ejemplos (1 de 5 en pantallas grandes) -->
+      <aside class="lg:col-span-1 overflow-y-auto">
+        <CodePanel />
+      </aside>
+    </div>
+  </body>
+</html>
