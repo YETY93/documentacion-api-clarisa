@@ -1,20 +1,14 @@
 ---
 // src/pages/index.astro
 import MainLayout from '../layouts/MainLayout.astro';
-import TestTailwind from '../components/TestTailwind.astro';
 import { getCollection } from 'astro:content';
 
 const allDocs = await getCollection('docs');
 const categories = [...new Set(allDocs.map(doc => doc.data.category))];
 ---
 <MainLayout title="Documentación API Clarisa">
-  <!-- Componente de prueba para verificar Tailwind -->
-  <div class="mb-6 p-4 bg-blue-100 dark:bg-blue-900 border border-blue-300 dark:border-blue-700 rounded-lg">
-    <h2 class="text-lg font-bold text-blue-800 dark:text-blue-200">🎨 Test de Tailwind CSS</h2>
-    <p class="text-blue-700 dark:text-blue-300">Si ves este cuadro con colores y estilos, Tailwind está funcionando correctamente.</p>
-  </div>
   
-  <div class="space-y-8">
+  <div class="space-y-4">
     <!-- Hero Section -->
     <div class="border-b border-gray-200 dark:border-gray-700 pb-8">
       <div class="flex items-center space-x-4 mb-4">
@@ -135,7 +129,7 @@ const categories = [...new Set(allDocs.map(doc => doc.data.category))];
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         <div>
           <p class="text-gray-600 dark:text-gray-400 mb-2">
-            📧 <strong>Soporte técnico:</strong> api-support@clarisa.com
+            📧 <strong>Soporte técnico:</strong> soporte@clarisa.co
           </p>
           <p class="text-gray-600 dark:text-gray-400">
             📚 <strong>Guías adicionales:</strong> Consulta nuestro centro de ayuda
