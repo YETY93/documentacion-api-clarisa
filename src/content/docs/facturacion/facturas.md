@@ -15,6 +15,6 @@ Aquí va toda la información detallada sobre cómo gestionar las facturas a tra
 ```json
 {
   "id": "fact-123",
-  "amount": 150.75,
-  "status": "paid"
-}
+    "amount": 150.75,
+      "status": "paid"
+      }
