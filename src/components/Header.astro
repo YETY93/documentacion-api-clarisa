@@ -1,65 +1,210 @@
 ---
 // src/components/Header.astro
-import ThemeToggle from './ThemeToggle.astro';
+import ThemeToggle from "./ThemeToggle.astro";
+import SearchInput from "./SearchInput.astro";
+import { getCollection } from "astro:content";
+import { SearchService } from "../utils/search";
+
+const allDocs = await getCollection("docs");
+const searchService = new SearchService(allDocs);
+const searchData = searchService["index"]; // Acceder al índice privado para el cliente
 ---
+
 <div class="w-full flex items-center justify-between px-6">
   <!-- Logo y título -->
   <div class="flex items-center space-x-3">
-    <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+    <div
+      class="w-8 h-8 bg-gradient-to-br from-clarisa-500 to-clarisa-400 rounded-lg flex items-center justify-center shadow-lg"
+    >
       <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
       </svg>
     </div>
     <h1 class="text-lg font-bold text-white">API Clarisa</h1>
   </div>
 
   <!-- Buscador central -->
-  <div class="flex-1 max-w-xl mx-8">
-    <div class="relative">
-      <input 
-        type="text" 
-        id="search-input"
-        placeholder="Buscar en la documentación..." 
-        class="w-full px-4 py-1.5 pl-9 pr-4 text-gray-900 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-      />
-      <div class="absolute inset-y-0 left-0 flex items-center pl-3">
-        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-      </div>
-    </div>
-  </div>
+  <SearchInput />
 
   <!-- Navegación y dark mode -->
   <nav class="flex items-center space-x-4">
-    <a href="/" class="text-gray-300 hover:text-white transition-colors text-sm">Inicio</a>
-    <a href="/docs" class="text-gray-300 hover:text-white transition-colors text-sm">Docs</a>
+    <a href="/" class="text-gray-300 hover:text-white transition-colors text-sm"
+      >Inicio</a
+    >
+    <a
+      href="/docs"
+      class="text-gray-300 hover:text-white transition-colors text-sm">Docs</a
+    >
     <ThemeToggle />
   </nav>
 </div>
 
-<script>
-  // Funcionalidad de búsqueda
-  document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('search-input') as HTMLInputElement;
-    
-    searchInput?.addEventListener('input', function(e) {
-      const target = e.target as HTMLInputElement;
-      const query = target.value.toLowerCase();
-      
-      // Aquí puedes implementar la lógica de búsqueda
-      // Por ahora, solo filtraremos elementos visibles del menú
-      const menuItems = document.querySelectorAll('.sidebar-menu-item');
-      
-      menuItems.forEach(item => {
-        const htmlItem = item as HTMLElement;
-        const text = htmlItem.textContent?.toLowerCase() || '';
-        if (text.includes(query) || query === '') {
-          htmlItem.style.display = 'block';
-        } else {
-          htmlItem.style.display = 'none';
+<!-- Script para pasar datos al cliente -->
+<script define:vars={{ searchData }} is:inline>
+  window.searchData = searchData;
+</script>
+
+<!-- Script de búsqueda -->
+<script is:inline>
+  // Constantes de configuración
+  const UI_CONFIG = {
+    SEARCH_MIN_LENGTH: 2,
+    SEARCH_MAX_RESULTS: 8,
+  };
+
+  class ClientSearchManager {
+    constructor() {
+      this.searchData = [];
+      this.searchInput = null;
+      this.searchClear = null;
+      this.searchResults = null;
+      this.init();
+    }
+
+    init() {
+      document.addEventListener("DOMContentLoaded", () => {
+        this.searchInput = document.getElementById("search-input");
+        this.searchClear = document.getElementById("search-clear");
+        this.searchResults = document.getElementById("search-results");
+
+        if (!this.searchInput) return;
+
+        this.searchData = window.searchData || [];
+        this.bindEvents();
+      });
+    }
+
+    bindEvents() {
+      if (!this.searchInput) return;
+
+      this.searchInput.addEventListener("input", (e) => {
+        const query = e.target.value.trim();
+        this.performSearch(query);
+        this.toggleClearButton(query.length > 0);
+      });
+
+      this.searchClear?.addEventListener("click", () => {
+        this.clearSearch();
+      });
+
+      document.addEventListener("click", (e) => {
+        if (
+          !this.searchInput?.contains(e.target) &&
+          !this.searchResults?.contains(e.target)
+        ) {
+          this.hideResults();
         }
       });
-    });
-  });
+
+      this.searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          this.hideResults();
+          this.searchInput?.blur();
+        }
+      });
+    }
+
+    performSearch(query) {
+      if (query.length < UI_CONFIG.SEARCH_MIN_LENGTH) {
+        this.hideResults();
+        return;
+      }
+
+      const results = this.searchData
+        .filter((doc) => {
+          const searchText =
+            `${doc.title} ${doc.category} ${doc.description} ${doc.tags.join(" ")} ${doc.method} ${doc.endpoint}`.toLowerCase();
+          return searchText.includes(query.toLowerCase());
+        })
+        .slice(0, UI_CONFIG.SEARCH_MAX_RESULTS);
+
+      this.updateSearchResults(results, query);
+    }
+
+    updateSearchResults(results, query) {
+      if (!this.searchResults) return;
+
+      if (results.length === 0 && query.length >= UI_CONFIG.SEARCH_MIN_LENGTH) {
+        this.searchResults.innerHTML = this.getNoResultsHTML(query);
+      } else if (results.length > 0) {
+        this.searchResults.innerHTML = results
+          .map((result) => this.getResultHTML(result))
+          .join("");
+      }
+
+      this.searchResults.classList.toggle(
+        "hidden",
+        results.length === 0 && query.length < UI_CONFIG.SEARCH_MIN_LENGTH,
+      );
+    }
+
+    getNoResultsHTML(query) {
+      return `
+        <div class="p-4 text-center text-gray-500 dark:text-gray-400">
+          <p class="text-sm">No se encontraron resultados para "${query}"</p>
+          <p class="text-xs mt-1">Intenta con otros términos de búsqueda</p>
+        </div>
+      `;
+    }
+
+    getResultHTML(result) {
+      const methodBadge = result.method
+        ? `<span class="inline-flex items-center rounded font-medium uppercase tracking-wide text-xs px-2 py-1 ${this.getBadgeClasses(result.method)}">${result.method}</span>`
+        : "";
+
+      const endpoint = result.endpoint
+        ? `<p class="text-xs font-mono text-gray-600 dark:text-gray-300 mb-1">${result.endpoint}</p>`
+        : "";
+
+      const description = result.description
+        ? `<p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">${result.description}</p>`
+        : "";
+
+      return `
+        <a href="${result.url}" class="block p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors group border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+          <div class="flex items-start justify-between mb-1">
+            <div class="flex items-center space-x-2">
+              ${methodBadge}
+              <h3 class="font-semibold text-gray-900 dark:text-white text-sm group-hover:text-primary-600 dark:group-hover:text-primary-400">${result.title}</h3>
+            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded capitalize">${result.category}</span>
+          </div>
+          ${endpoint}
+          ${description}
+        </a>
+      `;
+    }
+
+    getBadgeClasses(method) {
+      const classes = {
+        get: "bg-success-400/20 text-success-600 dark:bg-success-400/30 dark:text-success-400",
+        post: "bg-primary-400/20 text-primary-600 dark:bg-primary-400/30 dark:text-primary-400",
+        put: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+        delete: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+        patch:
+          "bg-clarisa-500/20 text-clarisa-700 dark:bg-clarisa-500/30 dark:text-clarisa-500",
+      };
+      return classes[method.toLowerCase()] || classes.get;
+    }
+
+    toggleClearButton(show) {
+      this.searchClear?.classList.toggle("hidden", !show);
+    }
+
+    clearSearch() {
+      if (this.searchInput) {
+        this.searchInput.value = "";
+        this.searchInput.focus();
+      }
+      this.toggleClearButton(false);
+      this.hideResults();
+    }
+
+    hideResults() {
+      this.searchResults?.classList.add("hidden");
+    }
+  }
+
+  // Inicializar el manager de búsqueda
+  new ClientSearchManager();
 </script>

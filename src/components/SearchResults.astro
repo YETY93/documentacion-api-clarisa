@@ -1,0 +1,88 @@
+---
+// src/components/SearchResults.astro
+import MethodBadge from './MethodBadge.astro';
+import type { SearchResult } from '../types';
+
+interface Props {
+    results: SearchResult[];
+    query: string;
+}
+
+const { results, query } = Astro.props;
+---
+
+<div
+    id="search-results"
+    class="search-results hidden absolute top-full left-0 right-0 mt-2 bg-white/95 dark:bg-slate-900/95 border border-gray-200/60 dark:border-slate-600/50 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto backdrop-blur-md"
+>
+    {
+        results.length > 0 ? (
+            <div class="p-2">
+                {results.map((result) => (
+                    <a
+                        href={result.url}
+                        class="block p-3 hover:bg-gray-50 dark:hover:bg-slate-800/70 rounded-lg transition-colors group border-b border-gray-100 dark:border-slate-700/50 last:border-b-0"
+                    >
+                        <div class="flex items-start justify-between mb-1">
+                            <div class="flex items-center space-x-2">
+                                {result.method && (
+                                    <MethodBadge method={result.method as any} />
+                                )}
+                                <h3 class="font-semibold text-gray-900 dark:text-white text-sm group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                    {result.title}
+                                </h3>
+                            </div>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded capitalize">
+                                {result.category}
+                            </span>
+                        </div>
+
+                        {result.endpoint && (
+                            <p class="text-xs font-mono text-gray-600 dark:text-gray-300 mb-1">
+                                {result.endpoint}
+                            </p>
+                        )}
+
+                        {result.description && (
+                            <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                                {result.description}
+                            </p>
+                        )}
+
+                        {result.tags && result.tags.length > 0 && (
+                            <div class="flex flex-wrap gap-1 mt-2">
+                                {result.tags.slice(0, 3).map((tag: string) => (
+                                    <span class="text-xs bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 px-2 py-0.5 rounded">
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </a>
+                ))}
+            </div>
+        ) : query.length >= 2 ? (
+            <div class="p-4 text-center text-gray-500 dark:text-gray-400">
+                <p class="text-sm">
+                    No se encontraron resultados para "{query}"
+                </p>
+                <p class="text-xs mt-1">
+                    Intenta con otros términos de búsqueda
+                </p>
+            </div>
+        ) : null
+    }
+</div>
+
+<style>
+    .search-results {
+        backdrop-filter: blur(8px);
+    }
+
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>

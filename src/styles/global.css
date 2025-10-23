@@ -174,54 +174,46 @@
   background: rgb(31 41 55);
 }
 
-/* Estilos para badges y etiquetas */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+/* Los estilos de badges ahora se manejan en el componente MethodBadge */
+
+/* Estilos para la búsqueda */
+.search-results {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.badge-get {
-  background: rgb(220 252 231);
-  color: rgb(22 101 52);
+/* Animaciones para resultados */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.badge-post {
-  background: rgb(219 234 254);
-  color: rgb(30 64 175);
+.search-results:not(.hidden) {
+  animation: slideDown 0.2s ease-out;
 }
 
-.badge-put {
-  background: rgb(254 240 138);
-  color: rgb(146 64 14);
+/* Estilos duplicados removidos - ya están definidos arriba */
+
+/* Scrollbar personalizado para resultados */
+.search-results::-webkit-scrollbar {
+  width: 6px;
 }
 
-.badge-delete {
-  background: rgb(254 226 226);
-  color: rgb(153 27 27);
+.search-results::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.dark .badge-get {
-  background: rgb(22 101 52);
-  color: rgb(220 252 231);
+.search-results::-webkit-scrollbar-thumb {
+  background: rgb(156 163 175);
+  border-radius: 3px;
 }
 
-.dark .badge-post {
-  background: rgb(30 64 175);
-  color: rgb(219 234 254);
-}
-
-.dark .badge-put {
-  background: rgb(146 64 14);
-  color: rgb(254 240 138);
-}
-
-.dark .badge-delete {
-  background: rgb(153 27 27);
-  color: rgb(254 226 226);
+.dark .search-results::-webkit-scrollbar-thumb {
+  background: rgb(75 85 99);
 }

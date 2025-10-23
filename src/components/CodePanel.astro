@@ -2,17 +2,17 @@
 // src/components/CodePanel.astro
 ---
 
-<div class="h-full bg-white dark:bg-gray-950">
+<div class="h-full bg-transparent">
   <!-- Header más compacto -->
-  <div class="p-4 border-b border-gray-200 dark:border-gray-800">
-    <h3 class="font-semibold text-gray-900 dark:text-white text-sm">Ejemplos de Código</h3>
-    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Prueba la API en diferentes lenguajes</p>
+  <div class="p-4 border-b border-gray-200/60 dark:border-slate-700/50">
+    <h3 class="font-semibold text-gray-900 dark:text-slate-100 text-sm">Ejemplos de Código</h3>
+    <p class="text-xs text-gray-600 dark:text-slate-300 mt-1">Prueba la API en diferentes lenguajes</p>
   </div>
   
   <!-- Tabs para diferentes lenguajes -->
-  <div class="border-b border-gray-200 dark:border-gray-800">
+  <div class="border-b border-gray-200/60 dark:border-slate-700/50">
     <nav class="flex px-4">
-      <button class="tab-button flex items-center space-x-2 py-2 px-4 border-b-2 border-blue-500 font-medium text-sm text-blue-600 dark:text-blue-400" data-tab="curl">
+      <button class="tab-button flex items-center space-x-2 py-2 px-4 border-b-2 border-primary-500 font-medium text-sm text-primary-600 dark:text-primary-400" data-tab="curl">
         <span class="w-4 h-4 bg-green-500 rounded text-xs text-white flex items-center justify-center font-mono">$</span>
         <span>cURL</span>
       </button>
@@ -21,7 +21,7 @@
         <span>JavaScript</span>
       </button>
       <button class="tab-button flex items-center space-x-2 py-2 px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300" data-tab="python">
-        <span class="w-4 h-4 bg-blue-500 rounded text-xs text-white flex items-center justify-center font-mono">PY</span>
+        <span class="w-4 h-4 bg-primary-500 rounded text-xs text-white flex items-center justify-center font-mono">PY</span>
         <span>Python</span>
       </button>
     </nav>
@@ -125,55 +125,93 @@ else:
 </div>
 
 <script is:inline>
-  document.addEventListener('DOMContentLoaded', function() {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-    const copyButtons = document.querySelectorAll('.copy-btn');
-    
-    // Funcionalidad de tabs - MANTENIENDO LA LÓGICA ORIGINAL
-    tabButtons.forEach(function(button) {
-      button.addEventListener('click', function() {
-        const targetTab = button.getAttribute('data-tab');
+  class CodePanelManager {
+    constructor() {
+      this.tabButtons = null;
+      this.tabContents = null;
+      this.copyButtons = null;
+      this.init();
+    }
+
+    init() {
+      document.addEventListener('DOMContentLoaded', () => {
+        this.tabButtons = document.querySelectorAll('.tab-button');
+        this.tabContents = document.querySelectorAll('.tab-content');
+        this.copyButtons = document.querySelectorAll('.copy-btn');
         
-        // Actualizar botones (lógica original)
-        tabButtons.forEach(function(btn) {
-          btn.classList.remove('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
-          btn.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
-        });
-        button.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
-        button.classList.add('border-blue-500', 'text-blue-600', 'dark:text-blue-400');
-        
-        // Actualizar contenido
-        tabContents.forEach(function(content) {
-          content.classList.add('hidden');
-        });
-        document.getElementById(targetTab).classList.remove('hidden');
+        this.bindTabEvents();
+        this.bindCopyEvents();
       });
-    });
-    
-    // Funcionalidad de copiar (manteniendo la original)
-    copyButtons.forEach(function(button) {
-      button.addEventListener('click', function() {
-        const targetId = button.getAttribute('data-target');
-        const codeElement = document.getElementById(targetId);
-        
-        if (codeElement && navigator.clipboard) {
-          navigator.clipboard.writeText(codeElement.textContent).then(function() {
-            const originalText = button.textContent;
-            button.textContent = '¡Copiado!';
-            setTimeout(function() {
-              button.textContent = originalText;
-            }, 2000);
-          }).catch(function() {
-            // Fallback para navegadores que no soportan clipboard API
-            const originalText = button.textContent;
-            button.textContent = 'Error';
-            setTimeout(function() {
-              button.textContent = originalText;
-            }, 2000);
-          });
+    }
+
+    bindTabEvents() {
+      this.tabButtons?.forEach((button) => {
+        button.addEventListener('click', () => {
+          const targetTab = button.getAttribute('data-tab');
+          if (!targetTab) return;
+          
+          this.updateActiveTab(button);
+          this.showTabContent(targetTab);
+        });
+      });
+    }
+
+    updateActiveTab(activeButton) {
+      this.tabButtons?.forEach((btn) => {
+        btn.classList.remove('border-primary-500', 'text-primary-600', 'dark:text-primary-400');
+        btn.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+      });
+      
+      activeButton.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+      activeButton.classList.add('border-primary-500', 'text-primary-600', 'dark:text-primary-400');
+    }
+
+    showTabContent(targetTab) {
+      this.tabContents?.forEach((content) => {
+        content.classList.add('hidden');
+      });
+      
+      const targetContent = document.getElementById(targetTab);
+      targetContent?.classList.remove('hidden');
+    }
+
+    bindCopyEvents() {
+      this.copyButtons?.forEach((button) => {
+        button.addEventListener('click', () => {
+          const targetId = button.getAttribute('data-target');
+          if (!targetId) return;
+          
+          const codeElement = document.getElementById(targetId);
+          if (!codeElement) return;
+          
+          this.copyToClipboard(codeElement.textContent || '', button);
+        });
+      });
+    }
+
+    async copyToClipboard(text, button) {
+      const originalText = button.textContent || '';
+      
+      try {
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+          this.showCopyFeedback(button, '¡Copiado!', originalText);
+        } else {
+          throw new Error('Clipboard API not supported');
         }
-      });
-    });
-  });
+      } catch (error) {
+        this.showCopyFeedback(button, 'Error', originalText);
+      }
+    }
+
+    showCopyFeedback(button, message, originalText) {
+      button.textContent = message;
+      setTimeout(() => {
+        button.textContent = originalText;
+      }, 2000);
+    }
+  }
+
+  // Auto-inicializar
+  new CodePanelManager();
 </script>

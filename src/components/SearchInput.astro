@@ -1,0 +1,29 @@
+---
+// src/components/SearchInput.astro
+import SearchResults from './SearchResults.astro';
+---
+
+<div class="flex-1 max-w-xl mx-8 relative">
+  <div class="relative">
+    <input 
+      type="text" 
+      id="search-input"
+      placeholder="Buscar endpoints, métodos, categorías..." 
+      class="w-full px-4 py-2 pl-10 pr-4 text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
+      autocomplete="off"
+    />
+    <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+    </div>
+    <button class="absolute inset-y-0 right-0 flex items-center pr-3 hidden text-gray-400 hover:text-gray-600" id="search-clear">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+  
+  <!-- Resultados de búsqueda contenidos dentro del mismo contenedor -->
+  <SearchResults results={[]} query="" />
+</div>

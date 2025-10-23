@@ -1,0 +1,18 @@
+---
+// src/components/MethodBadge.astro
+import { BADGE_STYLES } from '../constants';
+import type { HttpMethod } from '../types';
+
+interface Props {
+  method: HttpMethod;
+  size?: 'sm' | 'md';
+}
+
+const { method, size = 'sm' } = Astro.props;
+const methodLower = method.toLowerCase() as keyof typeof BADGE_STYLES;
+const sizeClasses = size === 'sm' ? 'text-xs px-2 py-1' : 'text-sm px-3 py-1.5';
+---
+
+<span class={`inline-flex items-center rounded font-medium uppercase tracking-wide ${sizeClasses} ${BADGE_STYLES[methodLower]}`}>
+  {method}
+</span>

@@ -1,6 +1,10 @@
 ---
 title: "Facturas"
 category: "facturacion"
+description: "Gestiona facturas electrónicas y consulta el historial de facturación"
+tags: ["facturas", "billing", "invoices"]
+method: "GET"
+endpoint: "/api/v1/facturas"
 ---
 # Documentación de Facturas
 
