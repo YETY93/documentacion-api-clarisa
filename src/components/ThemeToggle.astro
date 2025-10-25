@@ -2,46 +2,39 @@
 // src/components/ThemeToggle.astro
 ---
 
-<div class="flex items-center space-x-3">
-  <!-- Toggle Switch -->
-  <button 
-    id="theme-toggle" 
-    class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-600 dark:bg-clarisa-500 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-clarisa-800"
-    aria-label="Cambiar tema"
-    title="Cambiar tema"
+<!-- Toggle Switch -->
+<button 
+  id="theme-toggle" 
+  class="relative inline-flex h-6 w-11 items-center rounded-full bg-dark-bg-secondary dark:bg-clarisa-500 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-clarisa-800 hover:scale-105"
+  aria-label="Cambiar tema"
+  title="Cambiar tema"
+>
+  <!-- Switch Circle -->
+  <span 
+    id="toggle-circle"
+    class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 translate-x-1 shadow-sm"
   >
-    <!-- Switch Circle -->
-    <span 
-      id="toggle-circle"
-      class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 translate-x-1"
+    <!-- Sun Icon (visible in light mode) -->
+    <svg 
+      id="sun-icon" 
+      class="absolute inset-0 h-4 w-4 text-yellow-500 opacity-100 transition-opacity duration-300" 
+      fill="currentColor" 
+      viewBox="0 0 20 20"
     >
-      <!-- Sun Icon (visible in light mode) -->
-      <svg 
-        id="sun-icon" 
-        class="absolute inset-0 h-4 w-4 text-yellow-500 opacity-100 transition-opacity duration-300" 
-        fill="currentColor" 
-        viewBox="0 0 20 20"
-      >
-        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
-      </svg>
-      
-      <!-- Moon Icon (visible in dark mode) -->
-      <svg 
-        id="moon-icon" 
-        class="absolute inset-0 h-4 w-4 text-clarisa-400 opacity-0 transition-opacity duration-300" 
-        fill="currentColor" 
-        viewBox="0 0 20 20"
-      >
-        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-      </svg>
-    </span>
-  </button>
-  
-  <!-- Theme Label -->
-  <span class="text-sm font-medium text-gray-300 group-hover:text-white transition-colors" id="theme-text">
-    Claro
+      <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+    </svg>
+    
+    <!-- Moon Icon (visible in dark mode) -->
+    <svg 
+      id="moon-icon" 
+      class="absolute inset-0 h-4 w-4 text-clarisa-400 opacity-0 transition-opacity duration-300" 
+      fill="currentColor" 
+      viewBox="0 0 20 20"
+    >
+      <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+    </svg>
   </span>
-</div>
+</button>
 
 <script is:inline>
   class ThemeManager {
@@ -50,7 +43,6 @@
       this.toggleCircle = null;
       this.sunIcon = null;
       this.moonIcon = null;
-      this.themeText = null;
       this.init();
     }
 
@@ -59,7 +51,6 @@
       this.toggleCircle = document.getElementById('toggle-circle');
       this.sunIcon = document.getElementById('sun-icon');
       this.moonIcon = document.getElementById('moon-icon');
-      this.themeText = document.getElementById('theme-text');
       
       const currentTheme = localStorage.getItem('theme') || 'light';
       
@@ -88,14 +79,13 @@
     }
 
     updateThemeUI(isDark) {
-      if (!this.toggleCircle || !this.sunIcon || !this.moonIcon || !this.themeText) return;
+      if (!this.toggleCircle || !this.sunIcon || !this.moonIcon) return;
 
       if (isDark) {
         // Mover el círculo a la derecha y cambiar iconos
         this.toggleCircle.style.transform = 'translateX(1.25rem)'; // translate-x-5
         this.sunIcon.style.opacity = '0';
         this.moonIcon.style.opacity = '1';
-        this.themeText.textContent = 'Oscuro';
         
         // Cambiar color de fondo del toggle
         this.themeToggle.classList.remove('bg-gray-600');
@@ -105,7 +95,6 @@
         this.toggleCircle.style.transform = 'translateX(0.25rem)'; // translate-x-1
         this.sunIcon.style.opacity = '1';
         this.moonIcon.style.opacity = '0';
-        this.themeText.textContent = 'Claro';
         
         // Cambiar color de fondo del toggle
         this.themeToggle.classList.remove('bg-clarisa-500');
@@ -127,11 +116,13 @@
     transition: opacity 0.3s ease;
   }
   
-  #theme-toggle:hover {
-    transform: scale(1.05);
-  }
-  
   #theme-toggle {
     transition: all 0.3s ease;
+  }
+  
+  /* Efecto hover más sutil */
+  #theme-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 </style>

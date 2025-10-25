@@ -4,6 +4,22 @@ import { getCollection } from 'astro:content';
 
 const allDocs = await getCollection('docs');
 const categories = [...new Set(allDocs.map(doc => doc.data.category))];
+
+// Obtener la URL actual para marcar el elemento activo
+const { pathname } = Astro.url;
+const currentPath = pathname.replace(/\/$/, '') || '/'; // Remover slash final
+
+// Función para verificar si un enlace está activo
+function isActiveLink(linkPath: string): boolean {
+  if (currentPath === '/' && linkPath === '/') return true;
+  if (linkPath === '/') return false;
+  return currentPath.includes(linkPath) || currentPath.endsWith(linkPath);
+}
+
+// Función para generar la URL del documento
+function getDocUrl(doc: any): string {
+  return `/${doc.data.category}/${doc.slug.split('/').pop()}`;
+}
 ---
 <nav class="h-full bg-transparent">
   <!-- Header del sidebar -->
@@ -12,16 +28,28 @@ const categories = [...new Set(allDocs.map(doc => doc.data.category))];
   </div>
   
   <!-- Contenido del sidebar -->
-  <div class="p-4 overflow-y-auto h-[calc(100vh-140px)]">
+  <div class="p-4 overflow-y-auto scrollbar-thin h-[calc(100vh-140px)]">
     <ul class="space-y-6">
       {categories.map(category => (
         <li>
           <!-- Categoría -->
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="font-medium text-gray-900 dark:text-slate-100 text-sm uppercase tracking-wide">
+          <div class={`flex items-center justify-between mb-2 p-2 rounded-lg transition-colors ${
+            allDocs.filter(doc => doc.data.category === category).some(doc => isActiveLink(getDocUrl(doc)))
+              ? 'bg-clarisa-50 dark:bg-clarisa-900/20'
+              : ''
+          }`}>
+            <h3 class={`font-medium text-sm uppercase tracking-wide transition-colors ${
+              allDocs.filter(doc => doc.data.category === category).some(doc => isActiveLink(getDocUrl(doc)))
+                ? 'text-clarisa-700 dark:text-clarisa-300'
+                : 'text-gray-900 dark:text-slate-100'
+            }`}>
               {category}
             </h3>
-            <span class="text-xs text-gray-500 bg-gray-100 dark:bg-slate-800/50 dark:text-slate-300 px-2 py-1 rounded">
+            <span class={`text-xs px-2 py-1 rounded transition-colors ${
+              allDocs.filter(doc => doc.data.category === category).some(doc => isActiveLink(getDocUrl(doc)))
+                ? 'text-clarisa-600 bg-clarisa-100 dark:bg-clarisa-800/50 dark:text-clarisa-300'
+                : 'text-gray-500 bg-gray-100 dark:bg-slate-800/50 dark:text-slate-300'
+            }`}>
               {allDocs.filter(doc => doc.data.category === category).length}
             </span>
           </div>
@@ -30,16 +58,27 @@ const categories = [...new Set(allDocs.map(doc => doc.data.category))];
           <ul class="space-y-1 border-l border-gray-200 dark:border-slate-600/50 ml-1 pl-3">
             {allDocs
               .filter(doc => doc.data.category === category)
-              .map(doc => (
-                <li>
-                  <a 
-                    href={`/${doc.data.category}/${doc.slug.split('/').pop()}`}
-                    class="block text-sm text-gray-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 px-2 py-1.5 rounded transition-colors"
-                  >
-                    {doc.data.title}
-                  </a>
-                </li>
-              ))
+              .map(doc => {
+                const docUrl = getDocUrl(doc);
+                const isActive = isActiveLink(docUrl);
+                return (
+                  <li>
+                    <a 
+                      href={docUrl}
+                      class={`block text-sm px-2 py-1.5 rounded transition-colors relative ${
+                        isActive 
+                          ? 'text-clarisa-600 dark:text-clarisa-400 bg-clarisa-50 dark:bg-clarisa-900/30 font-medium border-l-2 border-clarisa-500 -ml-3 pl-4' 
+                          : 'text-gray-600 dark:text-slate-300 hover:text-clarisa-600 dark:hover:text-clarisa-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                      }`}
+                    >
+                      {isActive && (
+                        <span class="absolute left-0 top-0 bottom-0 w-0.5 bg-clarisa-500 rounded-r"></span>
+                      )}
+                      {doc.data.title}
+                    </a>
+                  </li>
+                );
+              })
             }
           </ul>
         </li>
@@ -53,17 +92,38 @@ const categories = [...new Set(allDocs.map(doc => doc.data.category))];
       </h3>
       <ul class="space-y-1">
         <li>
-          <a href="/getting-started" class="block text-sm text-gray-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 px-2 py-1.5 rounded transition-colors">
+          <a 
+            href="/getting-started" 
+            class={`block text-sm px-2 py-1.5 rounded transition-colors ${
+              isActiveLink('/getting-started')
+                ? 'text-clarisa-600 dark:text-clarisa-400 bg-clarisa-50 dark:bg-clarisa-900/30 font-medium'
+                : 'text-gray-600 dark:text-slate-300 hover:text-clarisa-600 dark:hover:text-clarisa-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'
+            }`}
+          >
             🚀 Comenzar
           </a>
         </li>
         <li>
-          <a href="/authentication" class="block text-sm text-gray-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-slate-800/50 px-2 py-1.5 rounded transition-colors">
+          <a 
+            href="/authentication" 
+            class={`block text-sm px-2 py-1.5 rounded transition-colors ${
+              isActiveLink('/authentication')
+                ? 'text-clarisa-600 dark:text-clarisa-400 bg-clarisa-50 dark:bg-clarisa-900/30 font-medium'
+                : 'text-gray-600 dark:text-slate-300 hover:text-clarisa-600 dark:hover:text-clarisa-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'
+            }`}
+          >
             🔐 Autenticación
           </a>
         </li>
         <li>
-          <a href="/examples" class="block text-sm text-gray-600 dark:text-clarisa-300 hover:text-primary-600 dark:hover:text-primary-400 px-2 py-1.5 rounded transition-colors">
+          <a 
+            href="/examples" 
+            class={`block text-sm px-2 py-1.5 rounded transition-colors ${
+              isActiveLink('/examples')
+                ? 'text-clarisa-600 dark:text-clarisa-400 bg-clarisa-50 dark:bg-clarisa-900/30 font-medium'
+                : 'text-gray-600 dark:text-slate-300 hover:text-clarisa-600 dark:hover:text-clarisa-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'
+            }`}
+          >
             📝 Ejemplos
           </a>
         </li>
@@ -71,3 +131,163 @@ const categories = [...new Set(allDocs.map(doc => doc.data.category))];
     </div>
   </div>
 </nav>
+<script is:inline>
+  class SidebarNavigationManager {
+    constructor() {
+      this.init();
+    }
+
+    init() {
+      document.addEventListener('DOMContentLoaded', () => {
+        this.highlightActiveSection();
+        this.addClickHandlers();
+      });
+    }
+
+    highlightActiveSection() {
+      const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+      
+      // Encontrar y marcar el enlace activo
+      const links = document.querySelectorAll('nav a[href]');
+      let activeLink = null;
+      
+      links.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && this.isActiveLink(currentPath, href)) {
+          activeLink = link;
+          this.setActiveLink(link);
+        }
+      });
+
+      // Destacar la categoría activa
+      if (activeLink) {
+        this.highlightActiveCategory(activeLink);
+      }
+    }
+
+    highlightActiveCategory(activeLink) {
+      // Encontrar la categoría que contiene el enlace activo
+      const categoryContainer = activeLink.closest('li')?.parentElement?.previousElementSibling;
+      if (categoryContainer) {
+        // Agregar clases de categoría activa
+        categoryContainer.classList.add('bg-clarisa-50', 'dark:bg-clarisa-900/20');
+        
+        const categoryTitle = categoryContainer.querySelector('h3');
+        const categoryBadge = categoryContainer.querySelector('span');
+        
+        if (categoryTitle) {
+          categoryTitle.classList.remove('text-gray-900', 'dark:text-slate-100');
+          categoryTitle.classList.add('text-clarisa-700', 'dark:text-clarisa-300');
+        }
+        
+        if (categoryBadge) {
+          categoryBadge.classList.remove('text-gray-500', 'bg-gray-100', 'dark:bg-slate-800/50', 'dark:text-slate-300');
+          categoryBadge.classList.add('text-clarisa-600', 'bg-clarisa-100', 'dark:bg-clarisa-800/50', 'dark:text-clarisa-300');
+        }
+      }
+    }
+
+    isActiveLink(currentPath, linkPath) {
+      if (currentPath === '/' && linkPath === '/') return true;
+      if (linkPath === '/') return false;
+      return currentPath.includes(linkPath) || currentPath.endsWith(linkPath);
+    }
+
+    setActiveLink(activeLink) {
+      // Remover clases activas de todos los enlaces
+      const allLinks = document.querySelectorAll('nav a[href]');
+      allLinks.forEach(link => {
+        link.classList.remove(
+          'text-clarisa-600', 'dark:text-clarisa-400', 
+          'bg-clarisa-50', 'dark:bg-clarisa-900/30', 
+          'font-medium', 'border-l-2', 'border-clarisa-500'
+        );
+        link.classList.add(
+          'text-gray-600', 'dark:text-slate-300'
+        );
+      });
+
+      // Agregar clases activas al enlace actual
+      activeLink.classList.remove('text-gray-600', 'dark:text-slate-300');
+      activeLink.classList.add(
+        'text-clarisa-600', 'dark:text-clarisa-400', 
+        'bg-clarisa-50', 'dark:bg-clarisa-900/30', 
+        'font-medium'
+      );
+
+      // Si es un enlace de documento (no de enlaces útiles), agregar borde
+      const isDocLink = activeLink.closest('ul')?.previousElementSibling?.tagName === 'DIV';
+      if (isDocLink) {
+        activeLink.classList.add('border-l-2', 'border-clarisa-500', '-ml-3', 'pl-4');
+      }
+
+      // Scroll al elemento activo si no está visible
+      this.scrollToActiveElement(activeLink);
+    }
+
+    scrollToActiveElement(element) {
+      const sidebar = element.closest('.overflow-y-auto');
+      if (!sidebar) return;
+
+      const elementRect = element.getBoundingClientRect();
+      const sidebarRect = sidebar.getBoundingClientRect();
+
+      if (elementRect.top < sidebarRect.top || elementRect.bottom > sidebarRect.bottom) {
+        element.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+    }
+
+    addClickHandlers() {
+      // Agregar handlers para navegación suave
+      const links = document.querySelectorAll('nav a[href^="/"]');
+      links.forEach(link => {
+        link.addEventListener('click', (e) => {
+          // Permitir navegación normal, pero actualizar estado visual
+          setTimeout(() => {
+            this.setActiveLink(link);
+          }, 100);
+        });
+      });
+    }
+  }
+
+  // Auto-inicializar
+  new SidebarNavigationManager();
+</script>
+
+<style>
+  /* Animación suave para el indicador activo */
+  nav a {
+    position: relative;
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* Efecto hover mejorado */
+  nav a:hover:not(.text-clarisa-600) {
+    transform: translateX(2px);
+  }
+
+  /* Indicador visual para elemento activo */
+  nav a.text-clarisa-600::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 16px;
+    background: linear-gradient(135deg, #2583c6, #1e40af);
+    border-radius: 2px;
+    opacity: 0.8;
+  }
+
+  /* Scroll suave para el sidebar */
+  .overflow-y-auto {
+    scroll-behavior: smooth;
+  }
+
+
+</style>

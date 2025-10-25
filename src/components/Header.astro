@@ -12,15 +12,36 @@ const searchData = searchService["index"]; // Acceder al índice privado para el
 
 <div class="w-full flex items-center justify-between px-6">
   <!-- Logo y título -->
-  <div class="flex items-center space-x-3">
-    <div
-      class="w-8 h-8 bg-gradient-to-br from-clarisa-500 to-clarisa-400 rounded-lg flex items-center justify-center shadow-lg"
+  <div class="flex items-center space-x-4">
+    <!-- Botón menú hamburguesa (móvil/tablet) -->
+    <button 
+      id="mobile-menu-toggle"
+      class="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+      aria-label="Abrir menú de navegación"
     >
-      <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
       </svg>
+    </button>
+    
+    <!-- Logo Clarisa con fondo claro -->
+    <div
+      class="logo-container bg-gradient-to-br from-white via-clarisa-50 to-clarisa-100 dark:from-slate-100 dark:via-slate-50 dark:to-white px-4 py-2 rounded-xl shadow-lg border border-white/30 dark:border-slate-200/50 backdrop-blur-sm"
+    >
+      <img
+        src="/clarisa-logo.png"
+        alt="Clarisa Logo"
+        class="h-8 w-auto object-contain filter drop-shadow-sm"
+      />
     </div>
-    <h1 class="text-lg font-bold text-white">API Clarisa</h1>
+    <div class="hidden md:block">
+      <h1 class="text-lg font-bold text-white tracking-wide">API</h1>
+      <p class="text-xs text-clarisa-200 -mt-1 font-medium">Documentación</p>
+    </div>
+    <!-- Texto compacto para móvil -->
+    <div class="block md:hidden">
+      <h1 class="text-base font-bold text-white">API</h1>
+    </div>
   </div>
 
   <!-- Buscador central -->
@@ -208,3 +229,33 @@ const searchData = searchService["index"]; // Acceder al índice privado para el
   // Inicializar el manager de búsqueda
   new ClientSearchManager();
 </script>
+
+<style>
+  /* Estilos adicionales para el logo */
+  .logo-container {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .logo-container:hover {
+    transform: translateY(-1px);
+  }
+
+  /* Animación sutil para el logo */
+  @keyframes logoGlow {
+    0%,
+    100% {
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    50% {
+      box-shadow:
+        0 10px 15px -3px rgba(37, 131, 198, 0.1),
+        0 4px 6px -2px rgba(37, 131, 198, 0.05);
+    }
+  }
+
+  .logo-container:hover {
+    animation: logoGlow 2s ease-in-out infinite;
+  }
+</style>

@@ -12,16 +12,16 @@
   <!-- Tabs para diferentes lenguajes -->
   <div class="border-b border-gray-200/60 dark:border-slate-700/50">
     <nav class="flex px-4">
-      <button class="tab-button flex items-center space-x-2 py-2 px-4 border-b-2 border-primary-500 font-medium text-sm text-primary-600 dark:text-primary-400" data-tab="curl">
+      <button class="tab-button flex items-center space-x-2 py-2 px-4 border-b-2 border-clarisa-500 font-medium text-sm text-clarisa-600 dark:text-clarisa-400 transition-colors" data-tab="curl">
         <span class="w-4 h-4 bg-green-500 rounded text-xs text-white flex items-center justify-center font-mono">$</span>
         <span>cURL</span>
       </button>
-      <button class="tab-button flex items-center space-x-2 py-2 px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300" data-tab="javascript">
+      <button class="tab-button flex items-center space-x-2 py-2 px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 transition-colors" data-tab="javascript">
         <span class="w-4 h-4 bg-yellow-500 rounded text-xs text-white flex items-center justify-center font-mono">JS</span>
         <span>JavaScript</span>
       </button>
-      <button class="tab-button flex items-center space-x-2 py-2 px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300" data-tab="python">
-        <span class="w-4 h-4 bg-primary-500 rounded text-xs text-white flex items-center justify-center font-mono">PY</span>
+      <button class="tab-button flex items-center space-x-2 py-2 px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 transition-colors" data-tab="python">
+        <span class="w-4 h-4 bg-clarisa-500 rounded text-xs text-white flex items-center justify-center font-mono">PY</span>
         <span>Python</span>
       </button>
     </nav>
@@ -125,93 +125,174 @@ else:
 </div>
 
 <script is:inline>
-  class CodePanelManager {
-    constructor() {
-      this.tabButtons = null;
-      this.tabContents = null;
-      this.copyButtons = null;
-      this.init();
-    }
+  // Evitar múltiples inicializaciones
+  if (!window.codePanelInitialized) {
+    window.codePanelInitialized = true;
+    
+    class CodePanelManager {
+      constructor() {
+        this.tabButtons = null;
+        this.tabContents = null;
+        this.copyButtons = null;
+        this.initialized = false;
+        this.init();
+      }
 
-    init() {
-      document.addEventListener('DOMContentLoaded', () => {
-        this.tabButtons = document.querySelectorAll('.tab-button');
-        this.tabContents = document.querySelectorAll('.tab-content');
-        this.copyButtons = document.querySelectorAll('.copy-btn');
-        
-        this.bindTabEvents();
-        this.bindCopyEvents();
-      });
-    }
-
-    bindTabEvents() {
-      this.tabButtons?.forEach((button) => {
-        button.addEventListener('click', () => {
-          const targetTab = button.getAttribute('data-tab');
-          if (!targetTab) return;
-          
-          this.updateActiveTab(button);
-          this.showTabContent(targetTab);
-        });
-      });
-    }
-
-    updateActiveTab(activeButton) {
-      this.tabButtons?.forEach((btn) => {
-        btn.classList.remove('border-primary-500', 'text-primary-600', 'dark:text-primary-400');
-        btn.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
-      });
-      
-      activeButton.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
-      activeButton.classList.add('border-primary-500', 'text-primary-600', 'dark:text-primary-400');
-    }
-
-    showTabContent(targetTab) {
-      this.tabContents?.forEach((content) => {
-        content.classList.add('hidden');
-      });
-      
-      const targetContent = document.getElementById(targetTab);
-      targetContent?.classList.remove('hidden');
-    }
-
-    bindCopyEvents() {
-      this.copyButtons?.forEach((button) => {
-        button.addEventListener('click', () => {
-          const targetId = button.getAttribute('data-target');
-          if (!targetId) return;
-          
-          const codeElement = document.getElementById(targetId);
-          if (!codeElement) return;
-          
-          this.copyToClipboard(codeElement.textContent || '', button);
-        });
-      });
-    }
-
-    async copyToClipboard(text, button) {
-      const originalText = button.textContent || '';
-      
-      try {
-        if (navigator.clipboard) {
-          await navigator.clipboard.writeText(text);
-          this.showCopyFeedback(button, '¡Copiado!', originalText);
-        } else {
-          throw new Error('Clipboard API not supported');
+      init() {
+        // Si ya está inicializado, solo rebind los eventos
+        if (this.initialized) {
+          this.rebindEvents();
+          return;
         }
-      } catch (error) {
-        this.showCopyFeedback(button, 'Error', originalText);
+
+        const initializeElements = () => {
+          this.tabButtons = document.querySelectorAll('.tab-button');
+          this.tabContents = document.querySelectorAll('.tab-content');
+          this.copyButtons = document.querySelectorAll('.copy-btn');
+          
+          if (this.tabButtons.length > 0) {
+            this.bindTabEvents();
+            this.bindCopyEvents();
+            this.initialized = true;
+          }
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initializeElements);
+        } else {
+          initializeElements();
+        }
+      }
+
+      rebindEvents() {
+        // Limpiar eventos anteriores y rebind
+        setTimeout(() => {
+          this.tabButtons = document.querySelectorAll('.tab-button');
+          this.tabContents = document.querySelectorAll('.tab-content');
+          this.copyButtons = document.querySelectorAll('.copy-btn');
+          
+          this.bindTabEvents();
+          this.bindCopyEvents();
+        }, 100);
+      }
+
+      bindTabEvents() {
+        this.tabButtons?.forEach((button) => {
+          // Remover listeners anteriores clonando el elemento
+          const newButton = button.cloneNode(true);
+          button.parentNode?.replaceChild(newButton, button);
+          
+          newButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const targetTab = newButton.getAttribute('data-tab');
+            if (!targetTab) return;
+            
+            this.updateActiveTab(newButton);
+            this.showTabContent(targetTab);
+          });
+        });
+        
+        // Actualizar la referencia después del clonado
+        this.tabButtons = document.querySelectorAll('.tab-button');
+      }
+
+      updateActiveTab(activeButton) {
+        this.tabButtons?.forEach((btn) => {
+          btn.classList.remove('border-clarisa-500', 'text-clarisa-600', 'dark:text-clarisa-400');
+          btn.classList.add('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+        });
+        
+        activeButton.classList.remove('border-transparent', 'text-gray-500', 'dark:text-gray-400');
+        activeButton.classList.add('border-clarisa-500', 'text-clarisa-600', 'dark:text-clarisa-400');
+      }
+
+      showTabContent(targetTab) {
+        this.tabContents?.forEach((content) => {
+          content.classList.add('hidden');
+        });
+        
+        const targetContent = document.getElementById(targetTab);
+        targetContent?.classList.remove('hidden');
+      }
+
+      bindCopyEvents() {
+        this.copyButtons?.forEach((button) => {
+          // Remover listeners anteriores clonando el elemento
+          const newButton = button.cloneNode(true);
+          button.parentNode?.replaceChild(newButton, button);
+          
+          newButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const targetId = newButton.getAttribute('data-target');
+            if (!targetId) return;
+            
+            const codeElement = document.getElementById(targetId);
+            if (!codeElement) return;
+            
+            this.copyToClipboard(codeElement.textContent || '', newButton);
+          });
+        });
+        
+        // Actualizar la referencia después del clonado
+        this.copyButtons = document.querySelectorAll('.copy-btn');
+      }
+
+      async copyToClipboard(text, button) {
+        const originalText = button.textContent || '';
+        
+        try {
+          if (navigator.clipboard) {
+            await navigator.clipboard.writeText(text);
+            this.showCopyFeedback(button, '¡Copiado!', originalText);
+          } else {
+            // Fallback para navegadores sin clipboard API
+            this.fallbackCopyToClipboard(text);
+            this.showCopyFeedback(button, '¡Copiado!', originalText);
+          }
+        } catch (error) {
+          this.showCopyFeedback(button, 'Error', originalText);
+        }
+      }
+
+      fallbackCopyToClipboard(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+          document.execCommand('copy');
+        } catch (err) {
+          console.error('Fallback: Oops, unable to copy', err);
+        }
+        
+        document.body.removeChild(textArea);
+      }
+
+      showCopyFeedback(button, message, originalText) {
+        button.textContent = message;
+        setTimeout(() => {
+          button.textContent = originalText;
+        }, 2000);
       }
     }
 
-    showCopyFeedback(button, message, originalText) {
-      button.textContent = message;
-      setTimeout(() => {
-        button.textContent = originalText;
-      }, 2000);
-    }
+    // Crear instancia global
+    window.codePanelManager = new CodePanelManager();
+    
+    // Reinicializar cuando se abra el panel móvil
+    document.addEventListener('codePanelOpened', () => {
+      if (window.codePanelManager) {
+        window.codePanelManager.rebindEvents();
+      }
+    });
   }
-
-  // Auto-inicializar
-  new CodePanelManager();
 </script>

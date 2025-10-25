@@ -1,0 +1,22 @@
+{
+  "name": "API Clarisa - Documentación",
+  "short_name": "API Clarisa",
+  "description": "Documentación completa de la API Clarisa",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#2583C6",
+  "background_color": "#0F172A",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}

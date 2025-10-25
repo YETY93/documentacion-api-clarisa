@@ -32,8 +32,24 @@ const { title } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
+    
+    <!-- Favicons para máxima compatibilidad -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    
+    <!-- Apple Touch Icon (para dispositivos Apple) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico" />
+    
+    <!-- Manifest para PWA (opcional) -->
+    <link rel="manifest" href="/site.webmanifest" />
+    
+    <!-- Meta tags adicionales -->
     <meta name="generator" content={Astro.generator} />
+    <meta name="description" content="Documentación completa de la API Clarisa - Integra fácilmente funcionalidades de facturación, gestión de clientes y reportes" />
+    <meta name="keywords" content="API, Clarisa, documentación, facturación, REST API, integración" />
+    <meta name="author" content="Clarisa" />
+    
     <title>{title}</title>
 
     <!-- Script para aplicar el tema ANTES de renderizar -->
@@ -52,124 +68,355 @@ const { title } = Astro.props;
   >
     <!-- Header fijo -->
     <header
-      class="bg-gradient-to-r from-clarisa-800 to-clarisa-700 dark:from-slate-900/95 dark:via-clarisa-950/90 dark:to-clarisa-900/95 text-white shadow-lg sticky top-0 z-50 border-b border-clarisa-600/30 dark:border-clarisa-500/20 backdrop-blur-sm"
+      class="bg-gradient-to-r from-clarisa-800 to-clarisa-700 dark:from-slate-900/95 dark:via-clarisa-950/90 dark:to-clarisa-900/95 text-white shadow-lg fixed top-0 left-0 right-0 z-50 border-b border-clarisa-600/30 dark:border-clarisa-500/20 backdrop-blur-sm"
     >
       <div class="h-16 flex items-center">
         <Header />
       </div>
     </header>
 
-    <!-- Contenedor principal con diseño de 3 columnas -->
-    <div class="flex h-[calc(100vh-64px)] w-full">
-      <!-- Columna Izquierda: Menú de navegación -->
+    <!-- Contenedor principal con diseño responsive -->
+    <div class="flex min-h-screen pt-16 w-full relative">
+      <!-- Columna Izquierda: Menú de navegación (Desktop) -->
       <aside
-        class="w-80 bg-white/95 dark:bg-slate-900/80 border-r border-gray-200/60 dark:border-slate-700/50 overflow-hidden flex flex-col flex-shrink-0 backdrop-blur-sm"
+        class="hidden lg:flex w-80 bg-white/95 dark:bg-slate-900/80 border-r border-gray-200/60 dark:border-slate-700/50 flex-col flex-shrink-0 backdrop-blur-sm h-[calc(100vh-64px)] sticky top-16"
       >
-        <div class="overflow-y-auto flex-1">
+        <div class="overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
           <SidebarMenu />
         </div>
       </aside>
 
       <!-- Columna Central: Contenido principal -->
-      <main class="flex-1 bg-white/90 dark:bg-slate-800/60 overflow-y-auto min-w-0 backdrop-blur-sm">
-        <div class="p-8 max-w-none w-full">
+      <main class="flex-1 bg-white/90 dark:bg-slate-800/60 min-w-0 backdrop-blur-sm min-h-[calc(100vh-64px)] xl:mr-96">
+        <div class="p-4 md:p-6 lg:p-8 max-w-none w-full pb-24 xl:pb-8">
           <slot />
         </div>
       </main>
 
-      <!-- Columna Derecha: Panel de código -->
+      <!-- Columna Derecha: Panel de código (Desktop) -->
       <aside
-        class="w-96 bg-white/95 dark:bg-slate-900/80 border-l border-gray-200/60 dark:border-slate-700/50 overflow-hidden flex flex-col flex-shrink-0 backdrop-blur-sm"
+        class="hidden xl:flex w-96 bg-white/95 dark:bg-slate-900/80 border-l border-gray-200/60 dark:border-slate-700/50 flex-col flex-shrink-0 backdrop-blur-sm fixed right-0 top-16 bottom-0 z-20"
       >
-        <div class="overflow-y-auto flex-1">
+        <div class="overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent h-full">
           <CodePanel />
         </div>
       </aside>
     </div>
 
-    <!-- Responsive: Menú móvil -->
-    <div id="mobile-menu" class="lg:hidden fixed inset-0 z-40 hidden">
-      <div class="fixed inset-0 bg-black bg-opacity-50" id="mobile-overlay">
-      </div>
+    <!-- Menú lateral móvil -->
+    <div id="mobile-sidebar-overlay" class="lg:hidden fixed inset-0 z-40 hidden">
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" id="mobile-overlay"></div>
       <div
-        class="fixed left-0 top-16 bottom-0 w-80 bg-white/95 dark:bg-slate-900/95 shadow-xl transform -translate-x-full transition-transform backdrop-blur-md"
+        class="fixed left-0 top-16 bottom-0 w-80 max-w-[85vw] bg-white/95 dark:bg-slate-900/95 shadow-xl transform -translate-x-full transition-transform duration-300 backdrop-blur-md"
         id="mobile-sidebar"
       >
-        <div class="p-6 overflow-y-auto h-full">
+        <div class="overflow-y-auto h-full scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
           <SidebarMenu />
         </div>
       </div>
     </div>
 
-    <!-- Botón de menú móvil -->
-    <button
-      id="mobile-menu-button"
-      class="lg:hidden fixed bottom-6 left-6 z-50 bg-primary-500 text-white p-3 rounded-full shadow-lg hover:bg-primary-600 transition-colors"
-    >
-      <svg
-        class="w-6 h-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
+    <!-- Panel de código flotante (móvil/tablet) -->
+    <div id="mobile-code-panel" class="xl:hidden fixed bottom-6 right-6 z-30">
+      <!-- Botón flotante circular -->
+      <button 
+        id="code-panel-toggle"
+        class="bg-clarisa-600 hover:bg-clarisa-700 dark:bg-clarisa-500 dark:hover:bg-clarisa-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:scale-110 focus:outline-none focus:ring-2 focus:ring-clarisa-400"
+        aria-label="Ver ejemplos de código"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M4 6h16M4 12h16M4 18h16"></path>
-      </svg>
-    </button>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+        </svg>
+      </button>
+      
+      <!-- Panel expandible que emerge desde la derecha -->
+      <div 
+        id="code-panel-content"
+        class="fixed bottom-0 right-0 top-16 w-full sm:w-96 bg-white/95 dark:bg-slate-900/95 shadow-2xl transform translate-x-full transition-transform duration-300 ease-out z-40 backdrop-blur-md border-l border-gray-200/60 dark:border-slate-700/50"
+      >
+        <!-- Cabecera del panel -->
+        <div class="bg-clarisa-600 dark:bg-clarisa-700 text-white p-4 flex items-center justify-between border-b border-clarisa-500/30">
+          <h3 class="font-semibold">Ejemplos de Código</h3>
+          <button 
+            id="close-panel"
+            class="text-white hover:text-gray-200 transition-colors p-1 rounded hover:bg-clarisa-700 dark:hover:bg-clarisa-600"
+            aria-label="Cerrar panel"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Contenido del panel con scroll independiente -->
+        <div class="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent pb-20">
+          <CodePanel />
+        </div>
+      </div>
+      
+      <!-- Overlay para cerrar el panel al hacer clic fuera -->
+      <div 
+        id="panel-overlay" 
+        class="fixed inset-0 bg-black/50 z-30 hidden transition-opacity duration-300 backdrop-blur-sm"
+      ></div>
+    </div>
 
-    <script is:inline>
-      class MobileMenuManager {
-        constructor() {
-          this.mobileMenuButton = null;
-          this.mobileMenu = null;
-          this.mobileSidebar = null;
-          this.mobileOverlay = null;
-          this.init();
+
+<script is:inline>
+  class ResponsiveManager {
+    constructor() {
+      // Elementos del menú lateral
+      this.mobileMenuToggle = null;
+      this.mobileSidebarOverlay = null;
+      this.mobileSidebar = null;
+      this.mobileOverlay = null;
+      
+      // Elementos del panel de código
+      this.codePanelToggle = null;
+      this.codePanelContent = null;
+      this.closePanel = null;
+      this.panelOverlay = null;
+      this.isCodePanelOpen = false;
+      
+      this.init();
+    }
+
+    init() {
+      document.addEventListener('DOMContentLoaded', () => {
+        // Menú lateral
+        this.mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        this.mobileSidebarOverlay = document.getElementById('mobile-sidebar-overlay');
+        this.mobileSidebar = document.getElementById('mobile-sidebar');
+        this.mobileOverlay = document.getElementById('mobile-overlay');
+        
+        // Panel de código
+        this.codePanelToggle = document.getElementById('code-panel-toggle');
+        this.codePanelContent = document.getElementById('code-panel-content');
+        this.closePanel = document.getElementById('close-panel');
+        this.panelOverlay = document.getElementById('panel-overlay');
+        
+        this.bindEvents();
+      });
+    }
+
+    bindEvents() {
+      // Eventos del menú lateral
+      this.mobileMenuToggle?.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.toggleSidebar();
+      });
+
+      this.mobileOverlay?.addEventListener('click', () => {
+        this.closeSidebar();
+      });
+
+      // Eventos del panel de código
+      this.codePanelToggle?.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.toggleCodePanel();
+      });
+      
+      this.closePanel?.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.closeCodePanel();
+      });
+      
+      this.panelOverlay?.addEventListener('click', () => {
+        this.closeCodePanel();
+      });
+
+      // Cerrar elementos al cambiar tamaño de ventana
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) {
+          this.closeSidebar();
         }
-
-        init() {
-          document.addEventListener('DOMContentLoaded', () => {
-            this.mobileMenuButton = document.getElementById('mobile-menu-button');
-            this.mobileMenu = document.getElementById('mobile-menu');
-            this.mobileSidebar = document.getElementById('mobile-sidebar');
-            this.mobileOverlay = document.getElementById('mobile-overlay');
-            
-            this.bindEvents();
-          });
+        if (window.innerWidth >= 1280) {
+          this.closeCodePanel();
         }
+      });
 
-        bindEvents() {
-          this.mobileMenuButton?.addEventListener('click', () => {
-            this.toggleMobileMenu();
-          });
-
-          this.mobileOverlay?.addEventListener('click', () => {
-            this.toggleMobileMenu();
-          });
-
-          window.addEventListener('resize', () => {
-            if (window.innerWidth >= 1024) {
-              this.closeMobileMenu();
-            }
-          });
+      // Cerrar panel con tecla Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          if (this.isCodePanelOpen) {
+            this.closeCodePanel();
+          }
+          if (!this.mobileSidebarOverlay?.classList.contains('hidden')) {
+            this.closeSidebar();
+          }
         }
+      });
+    }
 
-        toggleMobileMenu() {
-          this.mobileMenu?.classList.toggle('hidden');
-          this.mobileSidebar?.classList.toggle('-translate-x-full');
-        }
-
-        closeMobileMenu() {
-          this.mobileMenu?.classList.add('hidden');
-          this.mobileSidebar?.classList.add('-translate-x-full');
-        }
+    // Métodos del menú lateral
+    toggleSidebar() {
+      const isHidden = this.mobileSidebarOverlay?.classList.contains('hidden');
+      
+      if (isHidden) {
+        this.mobileSidebarOverlay?.classList.remove('hidden');
+        // Pequeño delay para la animación
+        setTimeout(() => {
+          this.mobileSidebar?.classList.remove('-translate-x-full');
+        }, 10);
+      } else {
+        this.closeSidebar();
       }
+    }
 
-      // Auto-inicializar
-      new MobileMenuManager();
-    </script>
+    closeSidebar() {
+      this.mobileSidebar?.classList.add('-translate-x-full');
+      // Esperar a que termine la animación antes de ocultar el overlay
+      setTimeout(() => {
+        this.mobileSidebarOverlay?.classList.add('hidden');
+      }, 300);
+    }
+
+    // Métodos del panel de código
+    toggleCodePanel() {
+      if (this.isCodePanelOpen) {
+        this.closeCodePanel();
+      } else {
+        this.openCodePanel();
+      }
+    }
+
+    openCodePanel() {
+      this.isCodePanelOpen = true;
+      
+      // Mostrar overlay primero
+      this.panelOverlay?.classList.remove('hidden');
+      
+      // Pequeño delay para la animación suave
+      setTimeout(() => {
+        this.codePanelContent?.classList.remove('translate-x-full');
+        
+        // Disparar evento para reinicializar el CodePanel
+        setTimeout(() => {
+          document.dispatchEvent(new CustomEvent('codePanelOpened'));
+        }, 300);
+      }, 10);
+      
+      // Prevenir scroll del body en móvil
+      if (window.innerWidth < 640) {
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    closeCodePanel() {
+      this.isCodePanelOpen = false;
+      
+      // Animar salida del panel
+      this.codePanelContent?.classList.add('translate-x-full');
+      
+      // Esperar a que termine la animación antes de ocultar el overlay
+      setTimeout(() => {
+        this.panelOverlay?.classList.add('hidden');
+      }, 300);
+      
+      // Restaurar scroll del body
+      document.body.style.overflow = '';
+    }
+  }
+
+  // Auto-inicializar
+  new ResponsiveManager();
+</script>
   </body>
 </html>
+
+<style>
+  /* Animaciones para el botón flotante */
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+  
+  @keyframes bounce-in {
+    0% {
+      transform: scale(0.3);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  #code-panel-toggle {
+    animation: bounce-in 0.6s ease-out, pulse 2s infinite 1s;
+  }
+  
+  #code-panel-toggle:hover {
+    animation: none;
+    transform: scale(1.1);
+  }
+  
+  /* Transiciones suaves para paneles */
+  #code-panel-content {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  #mobile-sidebar {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Efectos de overlay */
+  #panel-overlay,
+  #mobile-overlay {
+    backdrop-filter: blur(4px);
+    transition: opacity 0.3s ease;
+  }
+  
+
+  
+  /* Asegurar que el panel de código desktop tenga scroll independiente */
+  @media (min-width: 1280px) {
+    .xl\:mr-96 {
+      margin-right: 24rem;
+    }
+  }
+  
+  /* Mejorar interactividad en móvil */
+  .tab-button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  .tab-button:active {
+    transform: scale(0.98);
+  }
+  
+  .copy-btn {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  .copy-btn:active {
+    transform: scale(0.95);
+  }
+  
+  /* Asegurar que los elementos sean clickeables en móvil */
+  @media (max-width: 1279px) {
+    .tab-button {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .copy-btn {
+      min-height: 32px;
+      min-width: 60px;
+    }
+  }
+</style>
