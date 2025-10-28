@@ -1,0 +1,178 @@
+---
+// src/components/UniversalMarkdownProcessor.astro
+import EnhancedJsonViewer from "./EnhancedJsonViewer.astro";
+import JsonSummary from "./JsonSummary.astro";
+import { marked } from "marked";
+
+export interface Props {
+    content: string;
+}
+
+const { content } = Astro.props;
+
+// Configurar marked para mejor renderizado
+marked.setOptions({
+    breaks: true,
+    gfm: true,
+});
+
+// Función genérica para detectar el tipo de JSON basado en contexto
+function detectJsonType(beforeContext: string, jsonContent: string) {
+    const context = beforeContext.toLowerCase();
+    
+    // Detectar si es ejemplo principal/mínimo
+    const isMinimalExample = 
+        context.includes("datos mínimos") ||
+        context.includes("ejemplo anterior corresponde") ||
+        context.includes("petición con los datos mínimos") ||
+        context.includes("mínimo") ||
+        context.includes("básico") ||
+        context.includes("principal");
+    
+    // Determinar título basado en contexto
+    let title = "JSON";
+    
+    if (context.includes("formato de la petición") || context.includes("peticiócn") || context.includes("request")) {
+        title = "Formato de Petición";
+    } else if (context.includes("respuesta") || context.includes("response")) {
+        title = "Respuesta Esperada";
+    } else if (context.includes("múltiples impuestos") || context.includes("impuestos")) {
+        title = "Múltiples Impuestos";
+    } else if (context.includes("descuento a un ítem") || context.includes("descuento por ítem")) {
+        title = "Descuento por Ítem";
+    } else if (context.includes("descuento general") || context.includes("descuento total")) {
+        title = "Descuento General";
+    } else if (context.includes("propiedades adicionales") || context.includes("ejemplo adicional")) {
+        title = "Ejemplo Adicional";
+    } else if (context.includes("error") || context.includes("fallo")) {
+        title = "Respuesta de Error";
+    } else if (context.includes("éxito") || context.includes("success")) {
+        title = "Respuesta Exitosa";
+    } else if (context.includes("endpoint") || context.includes("api")) {
+        title = "Ejemplo de API";
+    }
+    
+    // Detectar por contenido del JSON si no hay contexto claro
+    try {
+        const parsed = JSON.parse(jsonContent);
+        if (parsed.error || parsed.message) {
+            title = title === "JSON" ? "Respuesta de Error" : title;
+        } else if (parsed.status === "success" || parsed.data) {
+            title = title === "JSON" ? "Respuesta Exitosa" : title;
+        } else if (parsed.nit || parsed.numeroResolucion) {
+            title = title === "JSON" ? "Formato de Petición" : title;
+        }
+    } catch (e) {
+        // Si no es JSON válido, mantener título detectado por contexto
+    }
+    
+    return { title, isMinimalExample };
+}
+
+// Función para procesar el markdown y extraer bloques JSON
+function processMarkdownContent(markdownContent: string) {
+    const parts = [];
+    let currentIndex = 0;
+
+    // Regex para encontrar bloques de código JSON
+    const jsonBlockRegex = /```json\n([\s\S]*?)\n```/g;
+    let match;
+
+    while ((match = jsonBlockRegex.exec(markdownContent)) !== null) {
+        // Agregar contenido antes del bloque JSON
+        if (match.index > currentIndex) {
+            const beforeContent = markdownContent.slice(currentIndex, match.index);
+            if (beforeContent.trim()) {
+                parts.push({
+                    type: "markdown",
+                    content: marked.parse(beforeContent) as string,
+                });
+            }
+        }
+
+        // Agregar el bloque JSON
+        const jsonContent = match[1];
+
+        // Obtener contexto más amplio para mejor detección
+        const beforeContext = markdownContent.slice(
+            Math.max(0, match.index - 400),
+            match.index,
+        );
+        const afterContext = markdownContent.slice(
+            match.index + match[0].length,
+            Math.min(markdownContent.length, match.index + match[0].length + 200),
+        );
+        const fullContext = beforeContext + afterContext;
+
+        // Detectar tipo y características del JSON
+        const { title, isMinimalExample } = detectJsonType(beforeContext, jsonContent);
+
+        parts.push({
+            type: "json",
+            content: jsonContent,
+            title: title,
+            isMinimalExample: isMinimalExample,
+            context: fullContext,
+        });
+
+        currentIndex = match.index + match[0].length;
+    }
+
+    // Agregar contenido restante
+    if (currentIndex < markdownContent.length) {
+        const remainingContent = markdownContent.slice(currentIndex);
+        if (remainingContent.trim()) {
+            parts.push({
+                type: "markdown",
+                content: marked.parse(remainingContent) as string,
+            });
+        }
+    }
+
+    return parts;
+}
+
+const processedParts = processMarkdownContent(content);
+const hasJsonBlocks = processedParts.some(part => part.type === "json");
+---
+
+<div class="universal-markdown-processor">
+    <!-- Mostrar resumen de JSONs solo si hay bloques JSON -->
+    {hasJsonBlocks && <JsonSummary content={content} />}
+
+    {
+        processedParts.map((part) => {
+            if (part.type === "json") {
+                return (
+                    <div class="not-prose">
+                    <EnhancedJsonViewer
+                        code={part.content}
+                        title={part.title}
+                        isMinimalExample={part.isMinimalExample}
+                        context={part.context}
+                        showCopyButton={true}
+                    />
+                    </div>
+                );
+            } else {
+                // Para contenido markdown, renderizamos como HTML
+                return (
+                    <div
+                        class="prose prose-slate dark:prose-invert max-w-none 
+                               prose-headings:text-gray-900 dark:prose-headings:text-white
+                               prose-p:text-gray-600 dark:prose-p:text-gray-300
+                               prose-a:text-clarisa-600 dark:prose-a:text-clarisa-400
+                               prose-strong:text-gray-900 dark:prose-strong:text-gray-100
+                               prose-code:bg-gray-100 dark:prose-code:bg-gray-800
+                               prose-code:text-gray-800 dark:prose-code:text-gray-200
+                               prose-pre:bg-gray-900 dark:prose-pre:bg-gray-800
+                               prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 dark:prose-blockquote:bg-blue-900/20
+                               prose-th:bg-gray-50 dark:prose-th:bg-gray-800"
+                        set:html={part.content}
+                    />
+                );
+            }
+        })
+    }
+</div>
+

@@ -1,0 +1,154 @@
+---
+// src/components/EnhancedJsonViewer.astro
+export interface Props {
+  code: string;
+  title?: string;
+  showCopyButton?: boolean;
+  isMinimalExample?: boolean;
+  context?: string;
+}
+
+const { code, title = "JSON", showCopyButton = true, isMinimalExample = false, context = "" } = Astro.props;
+
+// Intentar parsear y formatear el JSON
+let formattedJson = code;
+let isValidJson = false;
+
+try {
+  const parsed = JSON.parse(code);
+  formattedJson = JSON.stringify(parsed, null, 2);
+  isValidJson = true;
+} catch (e) {
+  formattedJson = code;
+}
+
+// Generar un ID único para este bloque
+const uniqueId = `json-${Math.random().toString(36).substring(2, 11)}`;
+
+// Detectar si es el JSON principal con datos mínimos (más genérico)
+const isMainExample = isMinimalExample && (
+  context.includes('NOTA: " El ejemplo anterior corresponde a un petición con los datos mínimos"') ||
+  context.includes('datos mínimos') ||
+  context.includes('ejemplo principal') ||
+  context.includes('básico') ||
+  title.toLowerCase().includes('petición') ||
+  title.toLowerCase().includes('formato')
+);
+---
+
+<div class="enhanced-json-viewer mb-6 border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
+  <!-- Header mejorado -->
+  <div class="flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
+    <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-2">
+        <div class="w-3 h-3 bg-green-500 rounded-full shadow-sm border border-green-400"></div>
+        <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+          {title}
+        </span>
+      </div>
+      
+      {isMainExample && (
+        <div class="flex items-center space-x-2">
+          <span class="px-3 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full font-medium">
+            📋 Datos mínimos
+          </span>
+          <span class="px-3 py-1 text-xs bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 rounded-full font-medium">
+            ⭐ Principal
+          </span>
+        </div>
+      )}
+      
+      {isMinimalExample && !isMainExample && (
+        <span class="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full">
+          Ejemplo básico
+        </span>
+      )}
+    </div>
+    
+    <div class="flex items-center space-x-2">
+      {isValidJson && (
+        <div class="flex items-center space-x-1 text-xs text-green-600 dark:text-green-400">
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+          </svg>
+          <span>Válido</span>
+        </div>
+      )}
+      
+      {showCopyButton && (
+        <button 
+          class="copy-json-btn flex items-center space-x-1 px-3 py-1.5 text-xs bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded hover:bg-gray-50 dark:hover:bg-gray-500 shadow-sm"
+          data-target={uniqueId}
+          title="Copiar JSON completo"
+        >
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+          <span class="copy-text">Copiar</span>
+        </button>
+      )}
+    </div>
+  </div>
+  
+  <!-- Contenido JSON con mejor visualización -->
+  <div class="relative bg-gray-50 dark:bg-gray-900">
+    <pre class={`p-4 overflow-x-auto text-sm leading-relaxed text-gray-800 dark:text-gray-200 ${formattedJson.split('\n').length > 10 ? 'pl-16' : ''}`}>
+      <code id={uniqueId} class="enhanced-json-code" set:html={formattedJson}></code>
+    </pre>
+    
+    <!-- Líneas de numeración opcionales para JSONs largos -->
+    {formattedJson.split('\n').length > 10 && (
+      <div class="absolute left-0 top-4 w-12 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 text-xs text-gray-400 dark:text-gray-500 font-mono">
+        {formattedJson.split('\n').map((_, index) => (
+          <div class="px-2 text-right h-6 flex items-center justify-end" style="line-height: 1.6;">{index + 1}</div>
+        ))}
+      </div>
+    )}
+  </div>
+  
+  <!-- Footer informativo para el ejemplo principal -->
+  {isMainExample && (
+    <div class="bg-blue-50 dark:bg-blue-900/20 border-t border-blue-200 dark:border-blue-800 px-4 py-3">
+      <div class="flex items-start space-x-2 text-sm">
+        <svg class="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+        <div class="text-blue-800 dark:text-blue-200">
+          <p class="font-medium mb-1">💡 Este es el ejemplo con los datos mínimos requeridos</p>
+          <p class="text-xs text-blue-600 dark:text-blue-300">
+            Este JSON contiene los campos obligatorios para realizar la petición.
+          </p>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
+
+<style>
+  .enhanced-json-code {
+    font-family: 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+    line-height: 1.6;
+  }
+
+  /* Anular la transición global para el botón de copiar */
+  .copy-json-btn {
+    transition: none;
+  }
+  
+  /* Syntax highlighting para modo claro */
+  .enhanced-json-code :global(.json-key) { color: #065f46; font-weight: 600; }
+  .enhanced-json-code :global(.json-string) { color: #991b1b; }
+  .enhanced-json-code :global(.json-number) { color: #5b21b6; font-weight: 500; }
+  .enhanced-json-code :global(.json-boolean) { color: #b45309; font-weight: 600; }
+  .enhanced-json-code :global(.json-null) { color: #6b7280; font-style: italic; }
+  .enhanced-json-code :global(.json-bracket) { color: #1f2937; font-weight: 600; }
+
+  /* Syntax highlighting mejorado para modo oscuro */
+  :global(.dark) .enhanced-json-code :global(.json-key) { color: #67e8f9; } /* cyan-300 */
+  :global(.dark) .enhanced-json-code :global(.json-string) { color: #fcd34d; } /* amber-300 */
+  :global(.dark) .enhanced-json-code :global(.json-number) { color: #c4b5fd; } /* violet-300 */
+  :global(.dark) .enhanced-json-code :global(.json-boolean) { color: #fdba74; } /* amber-400 */
+  :global(.dark) .enhanced-json-code :global(.json-null) { color: #9ca3af; } /* slate-400 */
+  :global(.dark) .enhanced-json-code :global(.json-bracket) { color: #e5e7eb; } /* slate-200 */
+</style>
+<script src="../scripts/json-viewer.js"></script>

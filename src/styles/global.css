@@ -3,7 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Estilos base personalizados */
 @layer base {
   html {
     font-family: system-ui, sans-serif;
@@ -74,7 +73,6 @@
   background: rgba(75, 85, 99, 0.8);
 }
 
-/* Estilos para código */
 .tab-content pre {
   white-space: pre;
   word-wrap: normal;
@@ -88,17 +86,18 @@
   font-family: inherit;
 }
 
-/* Animaciones suaves */
 .transition-smooth {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Estilos para el buscador */
 #search-input:focus {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Estilos para botones de copia */
+.dark #search-input:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
 .copy-btn {
   transition: all 0.2s ease;
   font-size: 11px;
@@ -127,7 +126,6 @@
   }
 }
 
-/* Mejoras para prose (contenido de documentación) */
 .prose {
   max-width: none;
 }
@@ -187,13 +185,11 @@
   background: rgb(31 41 55);
 }
 
-/* Estilos para la búsqueda */
 .search-results {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* Animaciones para resultados */
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -207,4 +203,48 @@
 
 .search-results:not(.hidden) {
   animation: slideDown 0.2s ease-out;
+}
+
+@layer components {
+  .json-container {
+    @apply border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm mb-6 transition-all duration-300 ease-in-out;
+  }
+
+  .json-container:hover {
+    @apply shadow-md;
+    transform: translateY(-2px);
+  }
+
+  .json-header {
+    @apply bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-600;
+  }
+
+  .json-content {
+    @apply bg-white dark:bg-gray-900 p-4 overflow-x-auto;
+  }
+
+  .json-code {
+    @apply font-mono text-sm leading-relaxed;
+    font-family: 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+  }
+}
+
+@layer utilities {
+  @media (prefers-reduced-motion: reduce) {
+    .json-container,
+    .json-container:hover {
+      @apply transition-none;
+      transform: none;
+    }
+
+    .search-results:not(.hidden) {
+      animation: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .json-container:hover {
+      transform: none;
+    }
+  }
 }

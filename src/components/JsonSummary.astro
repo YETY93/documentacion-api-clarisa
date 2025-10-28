@@ -1,0 +1,173 @@
+---
+// src/components/JsonSummary.astro
+export interface Props {
+  content: string;
+}
+
+const { content } = Astro.props;
+
+// Función para extraer información de los bloques JSON
+function extractJsonInfo(markdownContent: string) {
+  const jsonBlocks = [];
+  const jsonBlockRegex = /```json\n([\s\S]*?)\n```/g;
+  let match;
+  
+  while ((match = jsonBlockRegex.exec(markdownContent)) !== null) {
+    const jsonContent = match[1];
+    const beforeContext = markdownContent.slice(Math.max(0, match.index - 300), match.index);
+    
+    // Determinar el tipo de ejemplo
+    let type = 'Ejemplo';
+    let description = 'Ejemplo de JSON';
+    
+    if (beforeContext.includes('datos mínimos') || beforeContext.includes('petición con los datos mínimos') || beforeContext.includes('básico') || beforeContext.includes('principal')) {
+      type = 'Principal';
+      description = 'Estructura básica con datos mínimos requeridos';
+    } else if (beforeContext.includes('respuesta') || beforeContext.includes('response')) {
+      type = 'Respuesta';
+      description = 'Ejemplo de respuesta de la API';
+    } else if (beforeContext.includes('múltiples impuestos') || beforeContext.includes('impuestos')) {
+      type = 'Impuestos';
+      description = 'Ejemplo con múltiples impuestos por ítem';
+    } else if (beforeContext.includes('descuento a un ítem') || beforeContext.includes('descuento por ítem')) {
+      type = 'Descuento';
+      description = 'Aplicación de descuentos a nivel de ítem';
+    } else if (beforeContext.includes('descuento general') || beforeContext.includes('descuento total')) {
+      type = 'Descuento General';
+      description = 'Descuentos aplicados al total de la factura';
+    } else if (beforeContext.includes('error') || beforeContext.includes('fallo')) {
+      type = 'Error';
+      description = 'Ejemplo de respuesta de error';
+    } else if (beforeContext.includes('éxito') || beforeContext.includes('success')) {
+      type = 'Éxito';
+      description = 'Ejemplo de respuesta exitosa';
+    }
+    
+    // Contar propiedades del JSON
+    let propertyCount = 0;
+    try {
+      const parsed = JSON.parse(jsonContent);
+      propertyCount = Object.keys(parsed).length;
+    } catch (e) {
+      // Si no es JSON válido, contar líneas aproximadamente
+      propertyCount = jsonContent.split('\n').filter(line => line.includes(':')).length;
+    }
+    
+    jsonBlocks.push({
+      type,
+      description,
+      propertyCount,
+      size: jsonContent.length
+    });
+  }
+  
+  return jsonBlocks;
+}
+
+const jsonInfo = extractJsonInfo(content);
+---
+
+{jsonInfo.length > 0 && (
+  <div class="json-summary mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+    <div class="flex items-center space-x-2 mb-3">
+      <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+      <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100">
+        Ejemplos JSON Disponibles
+      </h3>
+      <span class="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded-full">
+        {jsonInfo.length} ejemplo{jsonInfo.length !== 1 ? 's' : ''}
+      </span>
+    </div>
+    
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {jsonInfo.map((info, index) => (
+        <div class="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <span class={`px-2 py-1 text-xs font-medium rounded-full ${
+              info.type === 'Principal' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' :
+              info.type === 'Respuesta' ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200' :
+              info.type === 'Impuestos' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200' :
+              info.type === 'Descuento' ? 'bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200' :
+              info.type === 'Descuento General' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' :
+              info.type === 'Error' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' :
+              info.type === 'Éxito' ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200' :
+              'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+            }`}>
+              {info.type}
+            </span>
+            {info.type === 'Principal' && (
+              <span class="text-xs text-yellow-600 dark:text-yellow-400">⭐</span>
+            )}
+          </div>
+          
+          <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+            {info.description}
+          </p>
+          
+          <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span>{info.propertyCount} propiedades</span>
+            <span>{Math.round(info.size / 1024 * 10) / 10}KB</span>
+          </div>
+        </div>
+      ))}
+    </div>
+    
+    <div class="mt-4 p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+      <div class="flex items-start space-x-2">
+        <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+        <div class="text-sm text-blue-800 dark:text-blue-200">
+          <p class="font-medium mb-1">💡 Consejos de uso:</p>
+          <ul class="text-xs space-y-1 text-blue-700 dark:text-blue-300">
+            <li>• Comienza con el ejemplo <strong>Principal</strong> para la estructura básica</li>
+            <li>• Usa el botón <strong>"Usar plantilla"</strong> para obtener una versión personalizable</li>
+            <li>• Los ejemplos adicionales muestran funcionalidades específicas</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .json-summary {
+    animation: slideInFromTop 0.5s ease-out;
+  }
+  
+  @keyframes slideInFromTop {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .json-summary .grid > div {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .json-summary .grid > div:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  :global(.dark) .json-summary .grid > div:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .json-summary {
+      animation: none;
+    }
+    
+    .json-summary .grid > div:hover {
+      transform: none;
+    }
+  }
+</style>

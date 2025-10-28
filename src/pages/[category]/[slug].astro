@@ -2,6 +2,7 @@
 // src/pages/[category]/[slug].astro
 import MainLayout from '../../layouts/MainLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import UniversalMarkdownProcessor from '../../components/UniversalMarkdownProcessor.astro';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -15,6 +16,9 @@ export async function getStaticPaths() {
 
 const { page } = Astro.props;
 const { Content } = await page.render();
+
+// Obtener el contenido raw del markdown para procesarlo
+const rawContent = page.body;
 ---
 <MainLayout title={page.data.title}>
   <!-- Breadcrumbs -->
@@ -57,8 +61,8 @@ const { Content } = await page.render();
       )}
     </div>
     
-    <!-- Contenido markdown -->
-    <Content />
+    <!-- Contenido markdown procesado -->
+    <UniversalMarkdownProcessor content={rawContent} />
   </div>
 </MainLayout>
 --- 
