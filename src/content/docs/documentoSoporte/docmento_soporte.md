@@ -1,6 +1,6 @@
 ---
 title: "Documento soporte"
-category: "Documento soporte"
+category: "documentoSoporte"
 ---
 # Documentación de Documento soporte
 

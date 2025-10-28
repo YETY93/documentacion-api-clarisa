@@ -18,7 +18,7 @@ function isActiveLink(linkPath: string): boolean {
 
 // Función para generar la URL del documento
 function getDocUrl(doc: any): string {
-  return `/${doc.data.category}/${doc.slug.split('/').pop()}`;
+  return `/${encodeURIComponent(doc.data.category)}/${doc.slug.split('/').pop()}`;
 }
 ---
 <nav class="h-full bg-transparent">
@@ -30,32 +30,55 @@ function getDocUrl(doc: any): string {
   <!-- Contenido del sidebar -->
   <div class="p-4 overflow-y-auto scrollbar-thin h-[calc(100vh-140px)]">
     <ul class="space-y-6">
-      {categories.map(category => (
+      {categories.map(category => {
+        const hasActiveDoc = allDocs.filter(doc => doc.data.category === category).some(doc => isActiveLink(getDocUrl(doc)));
+        return (
         <li>
-          <!-- Categoría -->
-          <div class={`flex items-center justify-between mb-2 p-2 rounded-lg transition-colors ${
-            allDocs.filter(doc => doc.data.category === category).some(doc => isActiveLink(getDocUrl(doc)))
-              ? 'bg-clarisa-50 dark:bg-clarisa-900/20'
-              : ''
-          }`}>
-            <h3 class={`font-medium text-sm uppercase tracking-wide transition-colors ${
-              allDocs.filter(doc => doc.data.category === category).some(doc => isActiveLink(getDocUrl(doc)))
-                ? 'text-clarisa-700 dark:text-clarisa-300'
-                : 'text-gray-900 dark:text-slate-100'
-            }`}>
-              {category}
-            </h3>
+          <!-- Categoría con acordeón -->
+          <button 
+            class={`accordion-toggle w-full flex items-center justify-between mb-2 p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-slate-800/50 ${
+              hasActiveDoc
+                ? 'bg-clarisa-50 dark:bg-clarisa-900/20'
+                : ''
+            }`}
+            data-category={category}
+            aria-expanded={hasActiveDoc ? 'true' : 'false'}
+          >
+            <div class="flex items-center gap-2">
+              <svg 
+                class={`accordion-arrow w-4 h-4 transition-transform duration-200 ${
+                  hasActiveDoc ? 'rotate-90' : ''
+                }`}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+              <h3 class={`font-medium text-sm uppercase tracking-wide transition-colors ${
+                hasActiveDoc
+                  ? 'text-clarisa-700 dark:text-clarisa-300'
+                  : 'text-gray-900 dark:text-slate-100'
+              }`}>
+                {category}
+              </h3>
+            </div>
             <span class={`text-xs px-2 py-1 rounded transition-colors ${
-              allDocs.filter(doc => doc.data.category === category).some(doc => isActiveLink(getDocUrl(doc)))
+              hasActiveDoc
                 ? 'text-clarisa-600 bg-clarisa-100 dark:bg-clarisa-800/50 dark:text-clarisa-300'
                 : 'text-gray-500 bg-gray-100 dark:bg-slate-800/50 dark:text-slate-300'
             }`}>
               {allDocs.filter(doc => doc.data.category === category).length}
             </span>
-          </div>
+          </button>
           
           <!-- Items de la categoría -->
-          <ul class="space-y-1 border-l border-gray-200 dark:border-slate-600/50 ml-1 pl-3">
+          <ul 
+            class={`accordion-content space-y-1 border-l border-gray-200 dark:border-slate-600/50 ml-1 pl-3 overflow-hidden transition-all duration-200 ${
+              hasActiveDoc ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}
+            data-category={category}
+          >
             {allDocs
               .filter(doc => doc.data.category === category)
               .map(doc => {
@@ -82,7 +105,7 @@ function getDocUrl(doc: any): string {
             }
           </ul>
         </li>
-      ))}
+      )})}
     </ul>
     
     <!-- Enlaces útiles -->
@@ -132,130 +155,45 @@ function getDocUrl(doc: any): string {
   </div>
 </nav>
 <script is:inline>
-  class SidebarNavigationManager {
-    constructor() {
-      this.init();
-    }
+  (function() {
+    if (window.sidebarInitialized) return;
+    window.sidebarInitialized = true;
 
-    init() {
-      document.addEventListener('DOMContentLoaded', () => {
-        this.highlightActiveSection();
-        this.addClickHandlers();
-      });
-    }
-
-    highlightActiveSection() {
-      const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+    function initAccordion() {
+      const accordionToggles = document.querySelectorAll('.accordion-toggle');
       
-      // Encontrar y marcar el enlace activo
-      const links = document.querySelectorAll('nav a[href]');
-      let activeLink = null;
-      
-      links.forEach(link => {
-        const href = link.getAttribute('href');
-        if (href && this.isActiveLink(currentPath, href)) {
-          activeLink = link;
-          this.setActiveLink(link);
-        }
-      });
-
-      // Destacar la categoría activa
-      if (activeLink) {
-        this.highlightActiveCategory(activeLink);
-      }
-    }
-
-    highlightActiveCategory(activeLink) {
-      // Encontrar la categoría que contiene el enlace activo
-      const categoryContainer = activeLink.closest('li')?.parentElement?.previousElementSibling;
-      if (categoryContainer) {
-        // Agregar clases de categoría activa
-        categoryContainer.classList.add('bg-clarisa-50', 'dark:bg-clarisa-900/20');
+      accordionToggles.forEach(toggle => {
+        if (toggle.hasAttribute('data-initialized')) return;
+        toggle.setAttribute('data-initialized', 'true');
         
-        const categoryTitle = categoryContainer.querySelector('h3');
-        const categoryBadge = categoryContainer.querySelector('span');
-        
-        if (categoryTitle) {
-          categoryTitle.classList.remove('text-gray-900', 'dark:text-slate-100');
-          categoryTitle.classList.add('text-clarisa-700', 'dark:text-clarisa-300');
-        }
-        
-        if (categoryBadge) {
-          categoryBadge.classList.remove('text-gray-500', 'bg-gray-100', 'dark:bg-slate-800/50', 'dark:text-slate-300');
-          categoryBadge.classList.add('text-clarisa-600', 'bg-clarisa-100', 'dark:bg-clarisa-800/50', 'dark:text-clarisa-300');
-        }
-      }
-    }
-
-    isActiveLink(currentPath, linkPath) {
-      if (currentPath === '/' && linkPath === '/') return true;
-      if (linkPath === '/') return false;
-      return currentPath.includes(linkPath) || currentPath.endsWith(linkPath);
-    }
-
-    setActiveLink(activeLink) {
-      // Remover clases activas de todos los enlaces
-      const allLinks = document.querySelectorAll('nav a[href]');
-      allLinks.forEach(link => {
-        link.classList.remove(
-          'text-clarisa-600', 'dark:text-clarisa-400', 
-          'bg-clarisa-50', 'dark:bg-clarisa-900/30', 
-          'font-medium', 'border-l-2', 'border-clarisa-500'
-        );
-        link.classList.add(
-          'text-gray-600', 'dark:text-slate-300'
-        );
-      });
-
-      // Agregar clases activas al enlace actual
-      activeLink.classList.remove('text-gray-600', 'dark:text-slate-300');
-      activeLink.classList.add(
-        'text-clarisa-600', 'dark:text-clarisa-400', 
-        'bg-clarisa-50', 'dark:bg-clarisa-900/30', 
-        'font-medium'
-      );
-
-      // Si es un enlace de documento (no de enlaces útiles), agregar borde
-      const isDocLink = activeLink.closest('ul')?.previousElementSibling?.tagName === 'DIV';
-      if (isDocLink) {
-        activeLink.classList.add('border-l-2', 'border-clarisa-500', '-ml-3', 'pl-4');
-      }
-
-      // Scroll al elemento activo si no está visible
-      this.scrollToActiveElement(activeLink);
-    }
-
-    scrollToActiveElement(element) {
-      const sidebar = element.closest('.overflow-y-auto');
-      if (!sidebar) return;
-
-      const elementRect = element.getBoundingClientRect();
-      const sidebarRect = sidebar.getBoundingClientRect();
-
-      if (elementRect.top < sidebarRect.top || elementRect.bottom > sidebarRect.bottom) {
-        element.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        });
-      }
-    }
-
-    addClickHandlers() {
-      // Agregar handlers para navegación suave
-      const links = document.querySelectorAll('nav a[href^="/"]');
-      links.forEach(link => {
-        link.addEventListener('click', (e) => {
-          // Permitir navegación normal, pero actualizar estado visual
-          setTimeout(() => {
-            this.setActiveLink(link);
-          }, 100);
+        toggle.addEventListener('click', (e) => {
+          e.preventDefault();
+          const category = toggle.dataset.category;
+          const content = document.querySelector(`.accordion-content[data-category="${category}"]`);
+          const arrow = toggle.querySelector('.accordion-arrow');
+          const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+          
+          if (isExpanded) {
+            toggle.setAttribute('aria-expanded', 'false');
+            arrow.classList.remove('rotate-90');
+            content.classList.remove('max-h-96', 'opacity-100');
+            content.classList.add('max-h-0', 'opacity-0');
+          } else {
+            toggle.setAttribute('aria-expanded', 'true');
+            arrow.classList.add('rotate-90');
+            content.classList.remove('max-h-0', 'opacity-0');
+            content.classList.add('max-h-96', 'opacity-100');
+          }
         });
       });
     }
-  }
 
-  // Auto-inicializar
-  new SidebarNavigationManager();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAccordion);
+    } else {
+      initAccordion();
+    }
+  })();
 </script>
 
 <style>

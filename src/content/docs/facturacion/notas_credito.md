@@ -8,7 +8,7 @@ Aquí va toda la información detallada sobre cómo gestionar las Notas credito 
 
 ## Endpoint Principal
 
-`GET /api/v1/Notas/credito`
+`POST /api/v1/Notas/credito`
 
 ## Respuesta Esperada
 
