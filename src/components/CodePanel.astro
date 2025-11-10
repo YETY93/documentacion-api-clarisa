@@ -1,194 +1,108 @@
 ---
 // src/components/CodePanel.astro
-const codeExamples = {
-  curl: `curl -X POST -H "Content-Type: application/json" -d '{
-  "nit": "12345",
-  "numeroResolucion": "18760000001",
-  "consecutivoDcto": "990000001",
-  "prefijoDcto": "SETP",
-  "fechaVencimiento": "2024-05-24",
-  "formaPago": "1",
-  "mediosPago": ["10", "30"],
-  "total": "119000.0",
-  "cliente": {
-    "nombreRazonSocial": "CONSUMIDOR FINAL",
-    "tipoIdentificacion": "NI",
-    "numIdentificacion": "222222222222",
-    "naturaleza": "NATURAL"
-  },
-  "items": [{
-    "codigo": "TC1",
-    "nombreItem": "Botella Cocacola 2.5 lt",
-    "precioBaseUnitario": 10000,
-    "cantidad": 10,
-    "unidad": "94",
-    "impuestos": [{
-      "tipo": "IVA",
-      "claseImpuesto": "PO",
-      "tarifaTributo": 19
-    }]
-  }]
-}' https://api.clarisa.co:8443/api/factura/rest/v1/factura/nacional`,
-  javascript: `fetch('https://api.clarisa.co:8443/api/factura/rest/v1/factura/nacional', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    nit: "12345",
-    numeroResolucion: "18760000001",
-    consecutivoDcto: "990000001",
-    prefijoDcto: "SETP",
-    fechaVencimiento: "2024-05-24",
-    formaPago: "1",
-    mediosPago: ["10", "30"],
-    total: "119000.0",
-    cliente: {
-      nombreRazonSocial: "CONSUMIDOR FINAL",
-      tipoIdentificacion: "NI",
-      numIdentificacion: "222222222222",
-      naturaleza: "NATURAL"
-    },
-    items: [{
-      codigo: "TC1",
-      nombreItem: "Botella Cocacola 2.5 lt",
-      precioBaseUnitario: 10000,
-      cantidad: 10,
-      unidad: "94",
-      impuestos: [{
-        tipo: "IVA",
-        claseImpuesto: "PO",
-        tarifaTributo": 19
-      }]
-    }]
-  })
-})
-.then(response => response.json())
-.then(data => console.log(data))
-.catch(error => console.error('Error:', error));`,
-  python: `import requests
-import json
+import { codeExamples, tabsData, exampleResponse } from '../data/code-examples.ts';
+import CodeViewer from './CodeViewer.astro';
+import EnhancedJsonViewer from './EnhancedJsonViewer.astro';
+import EndpointDisplay from "./EndpointDisplay.astro";
 
-url = "https://api.clarisa.co:8443/api/factura/rest/v1/factura/nacional"
-
-payload = {
-    "nit": "12345",
-    "numeroResolucion": "18760000001",
-    "consecutivoDcto": "990000001",
-    "prefijoDcto": "SETP",
-    "fechaVencimiento": "2024-05-24",
-    "formaPago": "1",
-    "mediosPago": ["10", "30"],
-    "total": "119000.0",
-    "cliente": {
-        "nombreRazonSocial": "CONSUMIDOR FINAL",
-        "tipoIdentificacion": "NI",
-        "numIdentificacion": "222222222222",
-        "naturaleza": "NATURAL"
-    },
-    "items": [
-        {
-            "codigo": "TC1",
-            "nombreItem": "Botella Cocacola 2.5 lt",
-            "precioBaseUnitario": 10000,
-            "cantidad": 10,
-            "unidad": "94",
-            "impuestos": [
-                {
-                    "tipo": "IVA",
-                    "claseImpuesto": "PO",
-                    "tarifaTributo": 19
-                }
-            ]
-        }
-    ]
+export interface Props {
+  method?: string;
+  endpoint_prod?: string;
+  endpoint_qa?: string;
 }
 
-headers = {
-    'Content-Type': 'application/json'
-}
-
-response = requests.post(url, data=json.dumps(payload), headers=headers)
-
-print(response.json())`,
-};
-
-const tabsData = [
-  { id: 'curl', label: 'cURL', icon: '$', iconBg: 'bg-green-500' },
-  { id: 'javascript', label: 'JavaScript', icon: 'JS', iconBg: 'bg-yellow-500' },
-  { id: 'python', label: 'Python', icon: 'PY', iconBg: 'bg-sky-500' },
-];
-
-const langHeaders = {
-    curl: 'Terminal',
-    javascript: 'Node.js / Browser',
-    python: 'Python 3.x'
-}
-
-const respuestaEjemplo = JSON.stringify({
-  "status": "success",
-  "data": [
-    {
-      "id": "fact_123",
-      "numero": "F-2024-001",
-      "fecha": "2024-01-15",
-      "total": 1250.00,
-      "cliente": "Empresa ABC"
-    }
-  ],
-  "meta": {
-    "total": 1,
-    "page": 1
-  }
-}, null, 2);
+const { method, endpoint_prod, endpoint_qa } = Astro.props;
 ---
-<div class="code-panel-container w-full h-full bg-white/50 dark:bg-slate-900/50 flex flex-col rounded-lg border border-gray-200/80 dark:border-slate-700/60">
+
+<div id="code-panel" class="w-full h-full flex flex-col">
   <!-- Header -->
-  <div class="p-4 border-b border-gray-200/60 dark:border-slate-700/50">
-    <h3 class="font-semibold text-gray-900 dark:text-slate-100 text-sm">Ejemplos de Código</h3>
-    <p class="text-xs text-gray-600 dark:text-slate-300 mt-1">Prueba la API en diferentes lenguajes</p>
+  <div class="p-4 border-b border-gray-200/80 dark:border-slate-700/60 flex-shrink-0">
+    <h3 class="font-semibold text-gray-900 dark:text-slate-100 text-base">Ejemplos de Código</h3>
+    <p class="text-sm text-gray-600 dark:text-slate-300 mt-1">Prueba la API en diferentes lenguajes</p>
   </div>
 
+  <!-- Endpoint Display -->
+  {(method && (endpoint_prod || endpoint_qa)) && (
+    <div class="p-4 flex-shrink-0">
+      <EndpointDisplay {method} {endpoint_prod} {endpoint_qa} />
+    </div>
+  )}
+
   <!-- Pestañas de lenguajes -->
-  <div class="border-b border-gray-200/60 dark:border-slate-700/50">
-    <nav class="flex px-4 -mb-px">
+  <div class="border-b border-gray-200/80 dark:border-slate-700/60 flex-shrink-0">
+    <nav class="flex px-2 -mb-px">
       {tabsData.map(tab => (
-        <button 
-          class="tab-button flex items-center space-x-2 py-2.5 px-4 border-b-2 font-medium text-sm transition-colors duration-200"
+        <button
+          class="tab-button flex items-center space-x-2 py-2.5 px-3 border-b-2 font-medium text-base transition-colors duration-200"
           data-tab={tab.id}
         >
-          <span class={`w-5 h-5 ${tab.iconBg} rounded text-white flex items-center justify-center text-xs font-mono`}>{tab.icon}</span>
           <span>{tab.label}</span>
         </button>
       ))}
     </nav>
   </div>
 
-  <!-- Contenido de los ejemplos de código -->
-  <div class="relative flex-1 overflow-y-auto p-4">
-    {Object.entries(codeExamples).map(([lang, code]) => (
-      <div id={lang} class="tab-content hidden">
-        <div class="mb-2 flex items-center justify-between">
-          <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{langHeaders[lang]}</span>
-          <button class="copy-code-btn text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" data-target={`code-${lang}`}>
-            Copiar
-          </button>
-        </div>
-        <pre class="bg-slate-800/80 text-white/80 p-3 rounded-md text-sm overflow-x-auto border border-slate-700/60 custom-scrollbar">
-          <code id={`code-${lang}`}>{code}</code>
-        </pre>
+  <!-- Contenido principal con scroll -->
+  <div class="flex-1 overflow-y-auto p-4">
+    <!-- Contenedores de ejemplos de código -->
+    {tabsData.map(tab => (
+      <div id={tab.id} class="tab-content hidden">
+        <CodeViewer
+          code={codeExamples[tab.id]}
+          language={tab.lang}
+          title={tab.label}
+        />
       </div>
     ))}
-  </div>
 
-  <!-- Respuesta de ejemplo -->
-  <div class="border-t border-gray-200/60 dark:border-slate-700/50 p-4">
-    <div class="mb-2">
-      <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Respuesta de ejemplo</span>
+    <!-- Respuesta de ejemplo -->
+    <div class="mt-6">
+      <EnhancedJsonViewer
+        code={JSON.stringify(exampleResponse, null, 2)}
+        title="Respuesta de Ejemplo"
+      />
     </div>
-    <pre class="bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 p-3 rounded text-xs overflow-x-auto border border-green-200 dark:border-green-800 custom-scrollbar"><code>{respuestaEjemplo}</code></pre>
   </div>
 </div>
+
+<script>
+  function initializeCodePanel() {
+    const panel = document.getElementById('code-panel');
+    if (!panel) return;
+
+    const tabs = panel.querySelectorAll('.tab-button');
+    const contents = panel.querySelectorAll('.tab-content');
+
+    function switchTab(activeTab) {
+      const targetId = activeTab.dataset.tab;
+
+      tabs.forEach(t => t.classList.remove('tab-active'));
+      activeTab.classList.add('tab-active');
+
+      contents.forEach(content => {
+        if (content.id === targetId) {
+          content.classList.remove('hidden');
+        } else {
+          content.classList.add('hidden');
+        }
+      });
+    }
+
+    // Activa la primera pestaña por defecto
+    if (tabs.length > 0) {
+      switchTab(tabs[0]);
+    }
+
+    // Añade listeners a las pestañas
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => switchTab(tab));
+    });
+  }
+
+  // Ejecuta el script en la carga de la página y en las navegaciones de Astro
+  document.addEventListener('astro:page-load', initializeCodePanel);
+  initializeCodePanel(); // Ejecución inicial
+</script>
 
 <style>
   .tab-button {
@@ -198,7 +112,6 @@ const respuestaEjemplo = JSON.stringify({
   .dark .tab-button {
     color: #94a3b8; /* slate-400 */
   }
-
   .tab-button:hover {
     color: #1e293b; /* slate-800 */
     border-color: #cbd5e1; /* slate-300 */
@@ -207,7 +120,6 @@ const respuestaEjemplo = JSON.stringify({
     color: #e2e8f0; /* slate-200 */
     border-color: #475569; /* slate-600 */
   }
-
   .tab-active {
     color: #0ea5e9 !important; /* sky-500 */
     border-color: #0ea5e9 !important; /* sky-500 */
@@ -216,23 +128,4 @@ const respuestaEjemplo = JSON.stringify({
     color: #38bdf8 !important; /* sky-400 */
     border-color: #38bdf8 !important; /* sky-400 */
   }
-  
-  .copy-code-btn, .copy-btn {
-    transition: none !important;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar {
-    height: 8px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #475569; /* slate-600 */
-    border-radius: 4px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #64748b; /* slate-500 */
-  }
 </style>
-<script src="../scripts/code-panel.js"></script>

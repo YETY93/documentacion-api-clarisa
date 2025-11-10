@@ -1,0 +1,27 @@
+---
+// src/components/CodeExample.astro
+import EnhancedJsonViewer from "./EnhancedJsonViewer.astro";
+
+export interface Props {
+  lang: 'curl' | 'javascript' | 'python';
+  code: string;
+  header: string;
+}
+
+const { lang, code, header } = Astro.props;
+const langDetails = {
+  curl: { title: 'cURL', language: 'bash' },
+  javascript: { title: 'JavaScript', language: 'javascript' },
+  python: { title: 'Python', language: 'python' },
+};
+
+const { title, language } = langDetails[lang];
+---
+
+<div class="code-example-container">
+  <EnhancedJsonViewer
+    code={code}
+    title={title}
+    lang={language}
+  />
+</div>

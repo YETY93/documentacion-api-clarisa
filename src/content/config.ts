@@ -8,6 +8,8 @@ const docsCollection = defineCollection({
     description: z.string().optional(),
     tags: z.array(z.string()).optional().default([]),
     method: z.enum(HTTP_METHODS).optional(),
+    endpoint_qa: z.string().optional(),
+    endpoint_prod: z.string().optional(),
     endpoint: z.string().optional(),
   }),
 });

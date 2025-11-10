@@ -229,6 +229,55 @@
   }
 }
 
+/* Resaltado de sintaxis JSON */
+.json-key {
+  color: #0451a5;
+}
+
+.dark .json-key {
+  color: #9cdcfe;
+}
+
+.json-string {
+  color: #a31515;
+}
+
+.dark .json-string {
+  color: #ce9178;
+}
+
+.json-number {
+  color: #098658;
+}
+
+.dark .json-number {
+  color: #b5cea8;
+}
+
+.json-boolean {
+  color: #0000ff;
+}
+
+.dark .json-boolean {
+  color: #569cd6;
+}
+
+.json-null {
+  color: #0000ff;
+}
+
+.dark .json-null {
+  color: #569cd6;
+}
+
+.json-bracket {
+  color: #000000;
+}
+
+.dark .json-bracket {
+  color: #d4d4d4;
+}
+
 @layer utilities {
   @media (prefers-reduced-motion: reduce) {
     .json-container,

@@ -4,69 +4,61 @@ import Header from "../components/Header.astro";
 import SidebarMenu from "../components/SidebarMenu.astro";
 import CodePanel from "../components/CodePanel.astro";
 import "../styles/global.css";
-import "../styles/json-viewer.css";
 
-const { title } = Astro.props;
+export interface Props {
+  title: string;
+  method?: string;
+  endpoint_prod?: string;
+  endpoint_qa?: string;
+}
+
+const { title, method, endpoint_prod, endpoint_qa } = Astro.props;
 ---
-
-<!-- Estilos para prevenir FOUC -->
-<style is:inline>
-  /* Prevenir el parpadeo del tema */
-  html {
-    color-scheme: light;
-  }
-
-  html.dark {
-    color-scheme: dark;
-  }
-
-  /* Transición suave para el cambio de tema */
-  *,
-  *::before,
-  *::after {
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  }
-</style>
-
 <html lang="es" class="h-full">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     
-    <!-- Favicons para máxima compatibilidad -->
+    {/* SCRIPT ANTI-PARPADEO: Se ejecuta antes de que la página se pinte */}
+    <script is:inline>
+      const theme = (() => {
+        // 1. Revisa si el usuario ya guardó una preferencia
+        if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
+          return localStorage.getItem("theme");
+        }
+        // 2. Si no, revisa la preferencia del sistema operativo
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          return "dark";
+        }
+        // 3. Por defecto, usa el tema claro
+        return "light";
+      })();
+
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+      
+      // Sincroniza el tema con el navegador para elementos como el scrollbar
+      document.documentElement.style.colorScheme = theme;
+    </script>
+    
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="shortcut icon" href="/favicon.ico" />
-    
-    <!-- Apple Touch Icon (para dispositivos Apple) -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico" />
-    
-    <!-- Manifest para PWA (opcional) -->
-    <link rel="manifest" href="/site.webmanifest" />
-    
-    <!-- Meta tags adicionales -->
     <meta name="generator" content={Astro.generator} />
-    <meta name="description" content="Documentación completa de la API Clarisa - Integra fácilmente funcionalidades de facturación, gestión de clientes y reportes" />
-    <meta name="keywords" content="API, Clarisa, documentación, facturación, REST API, integración" />
-    <meta name="author" content="Clarisa" />
-    
     <title>{title}</title>
-
-    <!-- Script para aplicar el tema ANTES de renderizar -->
-    <script is:inline>
-      // Aplicar el tema guardado inmediatamente para prevenir FOUC
-      (function () {
-        const theme = localStorage.getItem("theme") || "light";
-        if (theme === "dark") {
-          document.documentElement.classList.add("dark");
-        }
-      })();
-    </script>
+    
+    {/* Estilos para una transición de tema suave */}
+    <style>
+      *, *::before, *::after {
+        transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+      }
+    </style>
   </head>
   <body
-    class="h-full bg-gray-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-clarisa-950 text-slate-900 dark:text-slate-100 transition-colors"
+    class="h-full bg-gray-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-clarisa-950 text-slate-900 dark:text-slate-100"
   >
-    <!-- Header fijo -->
     <header
       class="bg-gradient-to-r from-clarisa-800 to-clarisa-700 dark:from-slate-900/95 dark:via-clarisa-950/90 dark:to-clarisa-900/95 text-white shadow-lg fixed top-0 left-0 right-0 z-50 border-b border-clarisa-600/30 dark:border-clarisa-500/20 backdrop-blur-sm"
     >
@@ -75,9 +67,7 @@ const { title } = Astro.props;
       </div>
     </header>
 
-    <!-- Contenedor principal con diseño responsive -->
     <div class="flex min-h-screen pt-16 w-full relative">
-      <!-- Columna Izquierda: Menú de navegación (Desktop) -->
       <aside
         class="hidden lg:flex w-80 bg-white/95 dark:bg-slate-900/80 border-r border-gray-200/60 dark:border-slate-700/50 flex-col flex-shrink-0 backdrop-blur-sm h-[calc(100vh-64px)] sticky top-16"
       >
@@ -86,19 +76,17 @@ const { title } = Astro.props;
         </div>
       </aside>
 
-      <!-- Columna Central: Contenido principal -->
-      <main class="flex-1 bg-white/90 dark:bg-slate-800/60 min-w-0 backdrop-blur-sm min-h-[calc(100vh-64px)] xl:mr-96">
+      <main class="flex-1 bg-white/90 dark:bg-slate-800/60 min-w-0 backdrop-blur-sm min-h-[calc(100vh-64px)] xl:mr-[36rem]">
         <div class="p-4 md:p-6 lg:p-8 max-w-none w-full pb-24 xl:pb-8">
           <slot />
         </div>
       </main>
 
-      <!-- Columna Derecha: Panel de código (Desktop) -->
       <aside
-        class="hidden xl:flex w-96 bg-white/95 dark:bg-slate-900/80 border-l border-gray-200/60 dark:border-slate-700/50 flex-col flex-shrink-0 backdrop-blur-sm fixed right-0 top-16 bottom-0 z-20"
+        class="hidden xl:flex w-[36rem] bg-white/95 dark:bg-slate-900/80 border-l border-gray-200/60 dark:border-slate-700/50 flex-col flex-shrink-0 backdrop-blur-sm fixed right-0 top-16 bottom-0 z-20"
       >
         <div class="overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent h-full">
-          <CodePanel />
+          <CodePanel {method} {endpoint_prod} {endpoint_qa} />
         </div>
       </aside>
     </div>
@@ -118,7 +106,6 @@ const { title } = Astro.props;
 
     <!-- Panel de código flotante (móvil/tablet) -->
     <div id="mobile-code-panel" class="xl:hidden fixed bottom-6 right-6 z-30">
-      <!-- Botón flotante circular -->
       <button 
         id="code-panel-toggle"
         class="bg-clarisa-600 hover:bg-clarisa-700 dark:bg-clarisa-500 dark:hover:bg-clarisa-600 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:scale-110 focus:outline-none focus:ring-2 focus:ring-clarisa-400"
@@ -129,12 +116,10 @@ const { title } = Astro.props;
         </svg>
       </button>
       
-      <!-- Panel expandible que emerge desde la derecha -->
       <div 
         id="code-panel-content"
         class="fixed bottom-0 right-0 top-16 w-full sm:w-96 bg-white/95 dark:bg-slate-900/95 shadow-2xl transform translate-x-full transition-transform duration-300 ease-out z-40 backdrop-blur-md border-l border-gray-200/60 dark:border-slate-700/50"
       >
-        <!-- Cabecera del panel -->
         <div class="bg-clarisa-600 dark:bg-clarisa-700 text-white p-4 flex items-center justify-between border-b border-clarisa-500/30">
           <h3 class="font-semibold">Ejemplos de Código</h3>
           <button 
@@ -148,115 +133,17 @@ const { title } = Astro.props;
           </button>
         </div>
         
-        <!-- Contenido del panel con scroll independiente -->
         <div class="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent pb-20">
-          <CodePanel />
+          <CodePanel {method} {endpoint_prod} {endpoint_qa} />
         </div>
       </div>
       
-      <!-- Overlay para cerrar el panel al hacer clic fuera -->
       <div 
         id="panel-overlay" 
         class="fixed inset-0 bg-black/50 z-30 hidden transition-opacity duration-300 backdrop-blur-sm"
       ></div>
     </div>
-<script src="../scripts/responsive.js"></script>
-</body>
+
+    <script src="../scripts/responsive.js"></script>
+  </body>
 </html>
-
-<style>
-  /* Animaciones para el botón flotante */
-  @keyframes pulse {
-    0%, 100% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.05);
-    }
-  }
-  
-  @keyframes bounce-in {
-    0% {
-      transform: scale(0.3);
-      opacity: 0;
-    }
-    50% {
-      transform: scale(1.05);
-    }
-    70% {
-      transform: scale(0.9);
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-  
-  #code-panel-toggle {
-    animation: bounce-in 0.6s ease-out, pulse 2s infinite 1s;
-  }
-  
-  #code-panel-toggle:hover {
-    animation: none;
-    transform: scale(1.1);
-  }
-  
-  /* Transiciones suaves para paneles */
-  #code-panel-content {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  #mobile-sidebar {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  /* Efectos de overlay */
-  #panel-overlay,
-  #mobile-overlay {
-    backdrop-filter: blur(4px);
-    transition: opacity 0.3s ease;
-  }
-  
-
-  
-  /* Asegurar que el panel de código desktop tenga scroll independiente */
-  @media (min-width: 1280px) {
-    .xl\:mr-96 {
-      margin-right: 24rem;
-    }
-  }
-  
-  /* Mejorar interactividad en móvil */
-  .tab-button {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  
-  .tab-button:active {
-    transform: scale(0.98);
-  }
-  
-  .copy-btn {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  
-  .copy-btn:active {
-    transform: scale(0.95);
-  }
-  
-  /* Asegurar que los elementos sean clickeables en móvil */
-  @media (max-width: 1279px) {
-    .tab-button {
-      min-height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .copy-btn {
-      min-height: 32px;
-      min-width: 60px;
-    }
-  }
-</style>

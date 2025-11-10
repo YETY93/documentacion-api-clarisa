@@ -20,7 +20,12 @@ const { Content } = await page.render();
 // Obtener el contenido raw del markdown para procesarlo
 const rawContent = page.body;
 ---
-<MainLayout title={page.data.title}>
+<MainLayout 
+  title={page.data.title}
+  method={page.data.method}
+  endpoint_prod={page.data.endpoint_prod}
+  endpoint_qa={page.data.endpoint_qa}
+>
   <!-- Breadcrumbs -->
   <Breadcrumbs category={page.data.category} title={page.data.title} />
   
@@ -32,17 +37,6 @@ const rawContent = page.body;
         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-clarisa-100 text-clarisa-800 dark:bg-clarisa-900/30 dark:text-clarisa-300">
           {page.data.category}
         </span>
-        {page.data.method && (
-          <span class={`inline-flex items-center px-2 py-1 rounded text-xs font-medium uppercase tracking-wide ${
-            page.data.method === 'GET' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-            page.data.method === 'POST' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
-            page.data.method === 'PUT' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
-            page.data.method === 'DELETE' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
-            'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
-          }`}>
-            {page.data.method}
-          </span>
-        )}
       </div>
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">
         {page.data.title}
@@ -52,17 +46,14 @@ const rawContent = page.body;
           {page.data.description}
         </p>
       )}
-      {page.data.endpoint && (
-        <div class="mt-4 p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700">
-          <code class="text-sm font-mono text-gray-800 dark:text-gray-200">
-            {page.data.method} {page.data.endpoint}
-          </code>
-        </div>
-      )}
     </div>
     
-    <!-- Contenido markdown procesado -->
-    <UniversalMarkdownProcessor content={rawContent} />
+    {/* El procesador ahora recibe los datos del endpoint para pasarlos a los componentes hijos */}
+    <UniversalMarkdownProcessor 
+      content={rawContent}
+      method={page.data.method}
+      endpoint_prod={page.data.endpoint_prod}
+      endpoint_qa={page.data.endpoint_qa}
+    />
   </div>
 </MainLayout>
---- 
