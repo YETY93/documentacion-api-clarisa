@@ -29,7 +29,7 @@ function getDocUrl(doc: any): string {
   
   <!-- Contenido del sidebar -->
   <div class="p-4 overflow-y-auto scrollbar-thin h-[calc(100vh-140px)]">
-    <ul class="space-y-6">
+    <ul class="space-y-1">
       {categories.map(category => {
         const hasActiveDoc = allDocs.filter(doc => doc.data.category === category).some(doc => isActiveLink(getDocUrl(doc)));
         return (
@@ -44,7 +44,7 @@ function getDocUrl(doc: any): string {
             data-category={category}
             aria-expanded={hasActiveDoc ? 'true' : 'false'}
           >
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-6">
               <svg 
                 class={`accordion-arrow w-4 h-4 transition-transform duration-200 ${
                   hasActiveDoc ? 'rotate-90' : ''
@@ -74,7 +74,7 @@ function getDocUrl(doc: any): string {
           
           <!-- Items de la categoría -->
           <ul 
-            class={`accordion-content space-y-1 border-l border-gray-200 dark:border-slate-600/50 ml-1 pl-3 overflow-hidden transition-all duration-200 ${
+            class={`accordion-content border-l border-gray-200 dark:border-slate-600/50 ml-1 pl-3 overflow-hidden transition-all duration-200 ${
               hasActiveDoc ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
             }`}
             data-category={category}

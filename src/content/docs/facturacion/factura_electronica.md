@@ -6,6 +6,36 @@ tags: ["facturas", "billing", "invoices", "api"]
 method: "POST"
 endpoint_prod: "https://api.clarisa.co/api/factura/rest/v1/factura/nacional"
 endpoint_qa: "https://pru.clarisacloud.com:8443/api/factura/rest/v1/factura/nacional"
+response_code: 200
+response_success: |
+   {
+      "data": {
+         "cufe": "d87280fc730dd038d43f9e1ff14e835e715b479897fa541a9dda56c9602fff1ad6d185eb5898587698e505b33827085f",
+         "fechaValidacion": "2023-11-20T11:15:22",
+         "numeroFactura": "SETP990000001"
+      },
+      "lastAction": "Crear Factura",
+      "success": true,
+      "textResponse": "Documento creado",
+      "titleResponse": "SUCCESS"
+   }
+response_code_error: [400, 401, 404, 500]
+response_error: |
+  {
+    "errores": {
+      "errores": [
+        {
+          "codError": "",
+          "errorMessage": "La Unidad: CMQX no existe."
+        }
+      ],
+      "total_errores": 1
+    },
+    "lastAction": "Crear Factura",
+    "success": false,
+    "textResponse": "Fallo al crear Factura",
+    "titleResponse": "FAILED"
+  }
 
 ---
 

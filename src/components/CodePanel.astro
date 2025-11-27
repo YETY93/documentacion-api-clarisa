@@ -1,17 +1,26 @@
 ---
 // src/components/CodePanel.astro
-import { codeExamples, tabsData, exampleResponse } from '../data/code-examples.ts';
 import CodeViewer from './CodeViewer.astro';
 import EnhancedJsonViewer from './EnhancedJsonViewer.astro';
 import EndpointDisplay from "./EndpointDisplay.astro";
+import { codeExamples, tabsData } from '../data/code-examples.ts';
 
 export interface Props {
   method?: string;
   endpoint_prod?: string;
   endpoint_qa?: string;
+  response_code?: number;
+  response_success?: string;
+  response_code_error?: number[];
+  response_error?: string;
 }
 
-const { method, endpoint_prod, endpoint_qa } = Astro.props;
+const { method, endpoint_prod, endpoint_qa, response_code, response_success, response_code_error, response_error } = Astro.props;
+
+// Normaliza el JSON para asegurar que es un string válido
+const safeSuccessResponse = response_success ? JSON.stringify(JSON.parse(response_success), null, 2) : undefined;
+const safeErrorResponse = response_error ? JSON.stringify(JSON.parse(response_error), null, 2) : undefined;
+
 ---
 
 <div id="code-panel" class="w-full h-full flex flex-col">
@@ -57,10 +66,32 @@ const { method, endpoint_prod, endpoint_qa } = Astro.props;
 
     <!-- Respuesta de ejemplo -->
     <div class="mt-6">
-      <EnhancedJsonViewer
-        code={JSON.stringify(exampleResponse, null, 2)}
-        title="Respuesta de Ejemplo"
-      />
+        <div class="border-b border-gray-200/80 dark:border-slate-700/60 flex-shrink-0">
+            <nav class="flex px-2 -mb-px">
+                <button class="response-tab-button flex items-center space-x-2 py-2.5 px-3 border-b-2 font-medium text-base transition-colors duration-200" data-tab="success-response">
+                    <span>Success</span>
+                </button>
+                <button class="response-tab-button flex items-center space-x-2 py-2.5 px-3 border-b-2 font-medium text-base transition-colors duration-200" data-tab="error-response">
+                    <span>Error</span>
+                </button>
+            </nav>
+        </div>
+        <div id="success-response" class="response-tab-content">
+            {safeSuccessResponse && (
+                <EnhancedJsonViewer
+                    code={safeSuccessResponse}
+                    title={`Respuesta Exitosa - Código ${response_code}`}
+                />
+            )}
+        </div>
+        <div id="error-response" class="response-tab-content hidden">
+            {safeErrorResponse && (
+                 <EnhancedJsonViewer
+                    code={safeErrorResponse}
+                    title={`Respuesta de Error - Códigos ${response_code_error?.join(', ')}`}
+                />
+            )}
+        </div>
     </div>
   </div>
 </div>
@@ -97,7 +128,37 @@ const { method, endpoint_prod, endpoint_qa } = Astro.props;
     tabs.forEach(tab => {
       tab.addEventListener('click', () => switchTab(tab));
     });
+
+
+    const responseTabs = panel.querySelectorAll('.response-tab-button');
+    const responseContents = panel.querySelectorAll('.response-tab-content');
+
+    function switchResponseTab(activeTab) {
+      const targetId = activeTab.dataset.tab;
+
+      responseTabs.forEach(t => t.classList.remove('tab-active'));
+      activeTab.classList.add('tab-active');
+
+      responseContents.forEach(content => {
+        if (content.id === targetId) {
+          content.classList.remove('hidden');
+        } else {
+          content.classList.add('hidden');
+        }
+      });
+    }
+
+    if (responseTabs.length > 0) {
+      switchResponseTab(responseTabs[0]);
+    }
+
+    responseTabs.forEach(tab => {
+      tab.addEventListener('click', () => switchResponseTab(tab));
+    });
+
   }
+
+
 
   // Ejecuta el script en la carga de la página y en las navegaciones de Astro
   document.addEventListener('astro:page-load', initializeCodePanel);
@@ -105,18 +166,18 @@ const { method, endpoint_prod, endpoint_qa } = Astro.props;
 </script>
 
 <style>
-  .tab-button {
+  .tab-button, .response-tab-button {
     border-color: transparent;
     color: #64748b; /* slate-500 */
   }
-  .dark .tab-button {
+  .dark .tab-button, .dark .response-tab-button {
     color: #94a3b8; /* slate-400 */
   }
-  .tab-button:hover {
+  .tab-button:hover, .response-tab-button:hover {
     color: #1e293b; /* slate-800 */
     border-color: #cbd5e1; /* slate-300 */
   }
-  .dark .tab-button:hover {
+  .dark .tab-button:hover, .dark .response-tab-button:hover {
     color: #e2e8f0; /* slate-200 */
     border-color: #475569; /* slate-600 */
   }
